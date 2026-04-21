@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+body {
+  min-width: 320px;
+}
+
+.avatar-user-male {
+  /* background-image: url("assets/images/user/avatar-user-male.webp"); */
+  background-image: url("/images/user/avatar-user-male.webp");
+  background-size: contain;
+}
+
+.avatar-user-female {
+  /* background-image: url("assets/images/user/avatar-user-male.webp"); */
+  background-image: url("/images/user/avatar-user-female.webp");
+  background-size: contain;
+}
+
+.avatar-doctor-male {
+  /* background-image: url("assets/images/user/avatar-user-male.webp"); */
+  background-image: url("/images/user/avatar-doctor-male.webp");
+  background-size: contain;
+}
+
+.avatar-doctor-female {
+  /* background-image: url("assets/images/user/avatar-user-male.webp"); */
+  background-image: url("/images/user/avatar-doctor-female.webp");
+  background-size: contain;
+}

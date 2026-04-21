@@ -38,11 +38,6 @@ export function DoctorProvider({ children }) {
   };
 
   const fetchDoctorInfo = async () => {
-    if (!user?.isDoctor) {
-      setDoctor(null);
-      return;
-    }
-
     const result = await getDoctorInfo();
 
     if (result && result.status) {
@@ -85,7 +80,7 @@ export function DoctorProvider({ children }) {
 
   const login = async (username, password) => {
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch(`${API_URL}/auth/doctor/login`, {
         method: "POST",
         credentials: "include",
         headers: {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation, Navigate, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/DoctorContext";
 
 const cabinetMenu = [
@@ -125,9 +125,6 @@ function CabinetLayout({ children }) {
     }
   };
 
-  if (!user?.isDoctor) {
-    return <Navigate to="/" replace />;
-  }
 
   const isActiveChild = (path) => location.pathname === path;
 

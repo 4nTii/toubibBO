@@ -1,13 +1,16 @@
 .PHONY: all help build up down restart logs shell prod-build prod-up
 
 ifeq ($(OS),Windows_NT)
-ENV_CHECK = powershell -NoProfile -ExecutionPolicy Bypass -Command "if (-not (Test-Path '.env')) { if (Test-Path '.env.docker') { Copy-Item '.env.docker' '.env'; Write-Host 'WARNING: .env created from .env.docker -- fill in the values then re-run make'; exit 1 } else { Write-Host 'ERROR: No .env file found. Create one before continuing.'; exit 1 } }"
+ENV_CHECK = powershell -NoProfile -ExecutionPolicy Bypass -Command "if (-not (Test-Path '.env')) { if (Test-Path '.env.docker') { Copy-Item '.env.docker' '.env'; Write-Host 'WARNING: .env created from .env.docker -- edit .env to customize' } elseif (Test-Path '.env.example') { Copy-Item '.env.example' '.env'; Write-Host 'WARNING: .env created from .env.example -- edit .env to customize' } else { Write-Host 'ERROR: No .env file found. Create one before continuing.'; exit 1 } }"
 HELP_CMD = powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-Content '$(firstword $(MAKEFILE_LIST))' | Where-Object { $$_ -match '^[a-zA-Z_-]+:.*?\#\# ' } | ForEach-Object { $$parts = $$_ -split ':.*?\#\# ', 2; Write-Host ('{0,-22} {1}' -f $$parts[0], $$parts[1]) }"
 else
 ENV_CHECK = if [ ! -f .env ]; then \
 		if [ -f .env.docker ]; then \
 			cp .env.docker .env; \
-			echo "WARNING: .env created from .env.docker -- default values used, edit .env to customize"; \
+			echo "WARNING: .env created from .env.docker -- edit .env to customize"; \
+		elif [ -f .env.example ]; then \
+			cp .env.example .env; \
+			echo "WARNING: .env created from .env.example -- edit .env to customize"; \
 		else \
 			echo "ERROR: No .env file found. Create one before continuing."; \
 			exit 1; \

@@ -164,7 +164,7 @@ function App() {
           path="/cabinet/rendez-vous/nouveau"
           element={
             <ProtectedRoute>
-              <NouveauRendezVous />
+              <EnAttente />
             </ProtectedRoute>
           }
         />
@@ -172,7 +172,7 @@ function App() {
           path="/cabinet/rendez-vous/attente"
           element={
             <ProtectedRoute>
-              <EnAttente />
+              <NouveauRendezVous />
             </ProtectedRoute>
           }
         />

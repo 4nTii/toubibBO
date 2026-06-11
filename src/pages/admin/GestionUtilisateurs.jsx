@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import Layout from "../../components/Layout/Layout";
-import { getUsers, suspendUser, forcePasswordChange } from "../../services/adminService";
+import { getUsers, suspendUser, forcePasswordChange, toggleDoctor } from "../../services/adminService";
 
 const ROLES = [
   { value: "", label: "Tous les rôles" },
@@ -24,12 +24,13 @@ function RoleBadge({ role }) {
 }
 
 function ActionButton({ title, onClick, disabled, children, variant = "default" }) {
-  const base = "relative group p-2 rounded-lg transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed";
+  const base = "relative group p-2 rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed";
   const variants = {
     default: "text-gray-400 hover:text-white hover:bg-gray-600",
     danger: "text-red-400 hover:text-white hover:bg-red-600",
     warning: "text-yellow-400 hover:text-white hover:bg-yellow-600",
     success: "text-green-400 hover:text-white hover:bg-green-600",
+    info: "text-blue-400 hover:text-white hover:bg-blue-600",
   };
 
   return (
@@ -59,6 +60,28 @@ function SuspendIcon({ isActive }) {
   );
 }
 
+function ToggleDoctorIcon({ isDoctor, isDoctorActive }) {
+  if (!isDoctor) {
+    // Promote
+    return (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+      </svg>
+    );
+  }
+  return isDoctorActive ? (
+    // Suspend doctor
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6M9 3h6l1 2H8L9 3zM3 7h18M19 7l-1 14H6L5 7" />
+    </svg>
+  ) : (
+    // Reactivate doctor
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+    </svg>
+  );
+}
+
 function ForcePasswordIcon({ active }) {
   return active ? (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,17 +99,26 @@ export default function GestionUtilisateurs() {
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
   const [pendingAction, setPendingAction] = useState(null);
   const [feedback, setFeedback] = useState(null);
 
   const fetchUsers = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await getUsers({ search, role: roleFilter });
-      if (res.status) setUsers(res.data);
+      const res = await getUsers({ search, role: roleFilter, page, limit: 10 });
+      if (res.status) {
+        setUsers(res.data);
+        setPagination(res.pagination);
+      }
     } finally {
       setIsLoading(false);
     }
+  }, [search, roleFilter, page]);
+
+  useEffect(() => {
+    setPage(1);
   }, [search, roleFilter]);
 
   useEffect(() => {
@@ -105,6 +137,27 @@ export default function GestionUtilisateurs() {
       const res = await suspendUser(user.id);
       if (res.status) {
         setUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, isActive: res.isActive } : u));
+        showFeedback(res.message);
+      } else {
+        showFeedback(res.message ?? "Erreur", "error");
+      }
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const handleToggleDoctor = async (user) => {
+    setPendingAction(user.id + "_doctor");
+    try {
+      const res = await toggleDoctor(user.id);
+      if (res.status) {
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === user.id
+              ? { ...u, isDoctor: res.isDoctor, isDoctorActive: res.isDoctorActive, doctorId: res.doctorId }
+              : u
+          )
+        );
         showFeedback(res.message);
       } else {
         showFeedback(res.message ?? "Erreur", "error");
@@ -206,6 +259,7 @@ export default function GestionUtilisateurs() {
                       <th className="text-left px-6 py-3">Rôle</th>
                       <th className="text-left px-6 py-3">Statut</th>
                       <th className="text-left px-6 py-3">Inscription</th>
+                      <th className="text-left px-6 py-3">Dernière connexion</th>
                       <th className="text-right px-6 py-3">Actions</th>
                     </tr>
                   </thead>
@@ -267,8 +321,33 @@ export default function GestionUtilisateurs() {
                             ? new Date(user.dateInscription).toLocaleDateString("fr-FR")
                             : "—"}
                         </td>
+                        <td className="px-6 py-4 text-gray-400 text-xs">
+                          {user.lastLogin
+                            ? new Date(user.lastLogin).toLocaleDateString("fr-FR", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : <span className="text-gray-600">Jamais</span>}
+                        </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-end gap-1">
+                            <ActionButton
+                              title={
+                                !user.isDoctor
+                                  ? "Promouvoir en médecin"
+                                  : user.isDoctorActive
+                                  ? "Suspendre le profil médecin"
+                                  : "Réactiver le profil médecin"
+                              }
+                              onClick={() => handleToggleDoctor(user)}
+                              disabled={pendingAction === user.id + "_doctor"}
+                              variant={!user.isDoctor ? "info" : user.isDoctorActive ? "warning" : "success"}
+                            >
+                              <ToggleDoctorIcon isDoctor={user.isDoctor} isDoctorActive={user.isDoctorActive} />
+                            </ActionButton>
                             <ActionButton
                               title={user.isActive ? "Suspendre le compte" : "Réactiver le compte"}
                               onClick={() => handleSuspend(user)}
@@ -297,9 +376,71 @@ export default function GestionUtilisateurs() {
                 </table>
               </div>
             )}
-            {!isLoading && users.length > 0 && (
-              <div className="px-6 py-3 border-t border-gray-700 text-xs text-gray-400">
-                {users.length} utilisateur{users.length > 1 ? "s" : ""} trouvé{users.length > 1 ? "s" : ""}
+            {!isLoading && pagination.total > 0 && (
+              <div className="px-6 py-4 border-t border-gray-700 flex items-center justify-between gap-4">
+                <span className="text-xs text-gray-400">
+                  {pagination.total} utilisateur{pagination.total > 1 ? "s" : ""} —
+                  page {pagination.page} / {pagination.totalPages}
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setPage(1)}
+                    disabled={pagination.page === 1}
+                    className="p-1.5 rounded text-gray-400 hover:text-white hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                    title="Première page"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7M18 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setPage((p) => p - 1)}
+                    disabled={pagination.page === 1}
+                    className="p-1.5 rounded text-gray-400 hover:text-white hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                    title="Page précédente"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+
+                  {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+                    .filter((p) => Math.abs(p - pagination.page) <= 2)
+                    .map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        className={`min-w-[2rem] h-8 rounded text-sm transition ${
+                          p === pagination.page
+                            ? "bg-blue-600 text-white font-medium"
+                            : "text-gray-400 hover:text-white hover:bg-gray-600"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+
+                  <button
+                    onClick={() => setPage((p) => p + 1)}
+                    disabled={pagination.page === pagination.totalPages}
+                    className="p-1.5 rounded text-gray-400 hover:text-white hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                    title="Page suivante"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setPage(pagination.totalPages)}
+                    disabled={pagination.page === pagination.totalPages}
+                    className="p-1.5 rounded text-gray-400 hover:text-white hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                    title="Dernière page"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M6 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             )}
           </div>

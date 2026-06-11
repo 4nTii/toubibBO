@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/DoctorContext";
+import { getScheduledAppointments } from "../../services/appointmentService";
 
 const cabinetMenu = [
   {
@@ -35,8 +36,8 @@ const cabinetMenu = [
     path: "/cabinet/rendez-vous",
     children: [
       { label: "Mon Agenda", path: "/cabinet/rendez-vous" },
-      { label: "Nouveau rendez-vous", path: "/cabinet/rendez-vous/nouveau" },
       { label: "En attente", path: "/cabinet/rendez-vous/attente" },
+      { label: "Nouveau rendez-vous", path: "/cabinet/rendez-vous/nouveau" },
     ],
   },
   {
@@ -100,6 +101,23 @@ const cabinetMenu = [
 function CabinetLayout({ children }) {
   const { user } = useAuth();
   const location = useLocation();
+  const [scheduledCount, setScheduledCount] = useState(0);
+
+  const fetchScheduledCount = () => {
+    getScheduledAppointments()
+      .then((res) => {
+        if (res?.status && Array.isArray(res.data)) {
+          setScheduledCount(res.data.length);
+        }
+      })
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchScheduledCount();
+    window.addEventListener("scheduled-appointments-updated", fetchScheduledCount);
+    return () => window.removeEventListener("scheduled-appointments-updated", fetchScheduledCount);
+  }, []);
 
   // Find active parent based on current path
   const findActiveParent = () => {
@@ -135,24 +153,30 @@ function CabinetLayout({ children }) {
         <div className="max-w-full mx-auto px-4">
           <div className="flex items-center justify-between pt-2">
             <div className="flex items-center justify-center space-x-2 w-full">
-              {cabinetMenu.map((item) => (
-                <button
-                  key={item.label}
-                  onClick={() => handleParentClick(item)}
-                  className={`relative px-4 py-2 text-sm font-medium rounded-t-lg transition duration-200 whitespace-nowrap cursor-pointer ${
-                    activeParent.label === item.label
-                      ? "bg-gray-900 text-white"
-                      : "text-gray-400 hover:text-white hover:bg-gray-700/50"
-                  }`}
-                >
-                  {item.badge > 0 && (
-                    <span className="absolute top-0 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                      {item.badge > 9 ? "9+" : item.badge}
-                    </span>
-                  )}
-                  {item.label}
-                </button>
-              ))}
+              {cabinetMenu.map((item) => {
+                const badge =
+                  item.label === "Rendez-vous"
+                    ? scheduledCount
+                    : item.badge ?? 0;
+                return (
+                  <button
+                    key={item.label}
+                    onClick={() => handleParentClick(item)}
+                    className={`relative px-4 py-2 text-sm font-medium rounded-t-lg transition duration-200 whitespace-nowrap cursor-pointer ${
+                      activeParent.label === item.label
+                        ? "bg-gray-900 text-white"
+                        : "text-gray-400 hover:text-white hover:bg-gray-700/50"
+                    }`}
+                  >
+                    {badge > 0 && (
+                      <span className="absolute top-0 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                        {badge > 9 ? "9+" : badge}
+                      </span>
+                    )}
+                    {item.label}
+                  </button>
+                );
+              })}
             </div>
             <div className="w-20"></div>
           </div>
@@ -167,19 +191,30 @@ function CabinetLayout({ children }) {
               {activeParent.label}
             </h3>
             <nav className="space-y-1">
-              {activeParent.children.map((child) => (
-                <Link
-                  key={child.path}
-                  to={child.path}
-                  className={`block px-4 py-2 rounded-lg transition duration-200 ${
-                    isActiveChild(child.path)
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                  }`}
-                >
-                  {child.label}
-                </Link>
-              ))}
+              {activeParent.children.map((child) => {
+                const childBadge =
+                  child.path === "/cabinet/rendez-vous/attente"
+                    ? scheduledCount
+                    : 0;
+                return (
+                  <Link
+                    key={child.path}
+                    to={child.path}
+                    className={`flex items-center justify-between px-4 py-2 rounded-lg transition duration-200 ${
+                      isActiveChild(child.path)
+                        ? "bg-blue-600 text-white"
+                        : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                    }`}
+                  >
+                    <span>{child.label}</span>
+                    {childBadge > 0 && (
+                      <span className="bg-red-500 text-white text-xs font-bold rounded-full min-w-[1.25rem] h-5 flex items-center justify-center px-1">
+                        {childBadge > 9 ? "9+" : childBadge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
             </nav>
           </div>
         </aside>

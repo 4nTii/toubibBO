@@ -49,6 +49,9 @@ import ProfilCabinet from "./pages/cabinet/parametres/Profil";
 import Preferences from "./pages/cabinet/parametres/Preferences";
 import Securite from "./pages/cabinet/parametres/Securite";
 
+// Admin
+import GestionUtilisateurs from "./pages/admin/GestionUtilisateurs";
+
 function App() {
   return (
     <BrowserRouter>
@@ -161,7 +164,7 @@ function App() {
           path="/cabinet/rendez-vous/nouveau"
           element={
             <ProtectedRoute>
-              <NouveauRendezVous />
+              <EnAttente />
             </ProtectedRoute>
           }
         />
@@ -169,7 +172,7 @@ function App() {
           path="/cabinet/rendez-vous/attente"
           element={
             <ProtectedRoute>
-              <EnAttente />
+              <NouveauRendezVous />
             </ProtectedRoute>
           }
         />
@@ -290,10 +293,38 @@ function App() {
           }
         />
 
+        {/* Admin */}
+        <Route
+          path="/admin/utilisateurs"
+          element={
+            <AdminRoute>
+              <GestionUtilisateurs />
+            </AdminRoute>
+          }
+        />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
+}
+
+function AdminRoute({ children }) {
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || user?.role !== "ROLE_ADMIN") {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 }
 
 // Redirect to home if already logged in

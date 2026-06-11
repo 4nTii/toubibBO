@@ -1,0 +1,12 @@
+services:
+
+  front:
+    build:
+      args:
+        - VITE_API_URL=${VITE_API_URL}
+        - VITE_APP_NAME=${VITE_APP_NAME}
+        - VITE_MESSAGE_TIMEOUT=${VITE_MESSAGE_TIMEOUT}
+        - VITE_CURRENCY_SYMBOL=${VITE_CURRENCY_SYMBOL}
+        - VITE_FTP_TARGET=${VITE_FTP_TARGET}
+    ports:
+      - "${FRONT_PORT:-3000}:80"

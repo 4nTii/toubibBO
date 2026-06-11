@@ -91,7 +91,22 @@ function Header() {
               </button>
 
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-gray-700 rounded-lg shadow-lg py-1 z-50">
+                <div className="absolute right-0 mt-2 w-56 bg-gray-700 rounded-lg shadow-lg py-1 z-50">
+                  {user?.role === "ROLE_ADMIN" && (
+                    <>
+                      <Link
+                        to="/admin/utilisateurs"
+                        className="flex items-center gap-2 px-4 py-2 text-purple-300 hover:bg-gray-600 transition duration-200"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Gestion des utilisateurs
+                      </Link>
+                      <hr className="my-1 border-gray-600" />
+                    </>
+                  )}
                   <Link
                     to="/cabinet"
                     className="block px-4 py-2 text-gray-200 hover:bg-gray-600 transition duration-200"

@@ -104,7 +104,13 @@ const DateUtils = {
     const seconds = Math.floor(absMs / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
+
+    // Calendar-day diff: ignore the time-of-day component to avoid off-by-one
+    const nowMidnight = new Date(now);
+    nowMidnight.setHours(0, 0, 0, 0);
+    const dateMidnight = new Date(date);
+    dateMidnight.setHours(0, 0, 0, 0);
+    const days = Math.round(Math.abs(dateMidnight - nowMidnight) / (1000 * 60 * 60 * 24));
 
     // Same calendar day
     const sameDay =

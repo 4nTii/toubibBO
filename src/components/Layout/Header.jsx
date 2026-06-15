@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect } from "react";
-import { useAuth } from "../../context/DoctorContext";
+import { useAuth, useDoctor } from "../../context/DoctorContext";
 import { useNavigate, Link } from "react-router-dom";
-import { APP_NAME } from "../../config/config";
+import { APP_NAME, FTP_TARGET } from "../../config/config";
 import SearchBar from "../ui/SearchBar";
 
 import logo from "../../assets/images/app/toubib-logo-w500.webp";
 
 function Header() {
   const { isAuthenticated, logout, user, fetchUserInfo } = useAuth();
+  const { doctor } = useDoctor();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -69,9 +70,17 @@ function Header() {
                 className="flex items-center gap-3 hover:bg-gray-700 px-3 py-2 rounded-lg transition duration-200 cursor-pointer"
               >
                 {/* Avatar */}
-                <div
-                  className={`avatar-doctor-${user?.gender || "male"} w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm`}
-                ></div>
+                {doctor?.profilePicture ? (
+                  <img
+                    src={`${FTP_TARGET}${doctor.profilePicture}`}
+                    alt="avatar"
+                    className="w-10 h-10 rounded-full object-cover shrink-0"
+                  />
+                ) : (
+                  <div
+                    className={`avatar-doctor-${user?.gender || "male"} w-10 h-10 rounded-full shrink-0`}
+                  />
+                )}
                 <span className="text-white">Bonjour {userName}</span>
                 <svg
                   className={`h-4 w-4 text-white transition-transform duration-200 ${

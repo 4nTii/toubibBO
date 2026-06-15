@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { useAuth } from "../context/DoctorContext";
+import { useAuth } from "../../context/DoctorContext";
 import { useNavigate, Link } from "react-router-dom";
-import { APP_NAME } from "../config/config";
-import SearchBar from "./SearchBar";
+import { APP_NAME } from "../../config/config";
+import SearchBar from "../ui/SearchBar";
 
-import logo from "../assets/images/app/toubib-logo-w500.webp";
+import logo from "../../assets/images/app/toubib-logo-w500.webp";
 
 function Header() {
   const { isAuthenticated, logout, user, fetchUserInfo } = useAuth();

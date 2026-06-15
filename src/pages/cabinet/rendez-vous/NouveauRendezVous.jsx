@@ -7,7 +7,7 @@ import {
   updateAppointmentStatus,
 } from "../../../services/appointmentService";
 import DateUtils from "../../../services/dateService";
-import AppointmentDrawer from "../../../components/AppointmentDrawer";
+import AppointmentDrawer from "../../../components/appointments/AppointmentDrawer";
 
 /* ── Appointment card ─────────────────────────────────────────── */
 function PatientAvatar({ gender, firstName }) {
@@ -278,6 +278,12 @@ function NouveauRendezVous() {
       {editingAppointment && (
         <AppointmentDrawer
           doctorId={doctor?.id}
+          businessSites={(doctor?.doctorBusinessSites ?? []).map((dbs) => ({
+            id: dbs.businessSite.id,
+            name: dbs.businessSite.name,
+            ville: dbs.businessSite.ville,
+            isPrimary: dbs.isPrimary,
+          }))}
           initialAppointment={editingAppointment}
           onClose={() => setEditingAppointment(null)}
           onSuccess={handleEditSuccess}

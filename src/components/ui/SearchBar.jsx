@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { search, searchGeo } from "../services/searchService";
-import { FTP_TARGET } from "../config/config";
+import { search, searchGeo } from "../../services/searchService";
+import { FTP_TARGET } from "../../config/config";
 import {
   SearchIcon,
   LocationPinIcon,
@@ -9,7 +9,7 @@ import {
   BuildingIcon,
   MedicalIcon,
   RegionIcon,
-} from "../services/IconService";
+} from "../icons/IconService";
 
 const DEBOUNCE_DELAY = 300;
 const MIN_SEARCH_LENGTH = 3;

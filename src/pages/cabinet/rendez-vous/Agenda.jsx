@@ -3,7 +3,7 @@ import Layout from "../../../components/Layout/Layout";
 import CabinetLayout from "../../../components/Layout/CabinetLayout";
 import { useDoctor } from "../../../context/DoctorContext";
 import Calendar from "../../../components/calendar/Calendar";
-import AppointmentDrawer from "../../../components/AppointmentDrawer";
+import AppointmentDrawer from "../../../components/appointments/AppointmentDrawer";
 import {
   getCalendarData,
   updateAppointmentStatus,
@@ -208,6 +208,7 @@ function Agenda() {
         phone:     props.patientPhone,
         gender:    props.patientGender,
       },
+      businessSite: props.businessSiteId ? { id: props.businessSiteId, name: props.businessSiteName } : null,
     });
   }, [showFeedback]);
 
@@ -369,6 +370,12 @@ function Agenda() {
       {editingAppointment && (
         <AppointmentDrawer
           doctorId={doctor?.id}
+          businessSites={(doctor?.doctorBusinessSites ?? []).map((dbs) => ({
+            id: dbs.businessSite.id,
+            name: dbs.businessSite.name,
+            ville: dbs.businessSite.ville,
+            isPrimary: dbs.isPrimary,
+          }))}
           initialAppointment={editingAppointment}
           onClose={() => setEditingAppointment(null)}
           onSuccess={(message) => {

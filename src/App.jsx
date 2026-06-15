@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/DoctorContext";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./components/ui/ProtectedRoute";
 import Auth from "./pages/auth/Auth";
 import Home from "./pages/Home";
 
@@ -11,7 +11,6 @@ import ActiviteRecente from "./pages/cabinet/dashboard/ActiviteRecente";
 // Cabinet - Patients
 import ListePatients from "./pages/cabinet/patients/ListePatients";
 import AjouterPatient from "./pages/cabinet/patients/AjouterPatient";
-import RechercheAvancee from "./pages/cabinet/patients/RechercheAvancee";
 
 // Cabinet - Dossiers médicaux
 import TousDossiers from "./pages/cabinet/dossiers/TousDossiers";
@@ -108,15 +107,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/cabinet/patients/recherche"
-          element={
-            <ProtectedRoute>
-              <RechercheAvancee />
-            </ProtectedRoute>
-          }
-        />
-
         {/* Cabinet - Dossiers médicaux */}
         <Route
           path="/cabinet/dossiers"

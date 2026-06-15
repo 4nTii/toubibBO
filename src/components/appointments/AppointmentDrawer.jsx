@@ -4,8 +4,8 @@ import {
   getAvailableSlots,
   updateAppointmentFull,
   createAppointment,
-} from "../services/appointmentService";
-import DateUtils from "../services/dateService";
+} from "../../services/appointmentService";
+import DateUtils from "../../services/dateService";
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -23,16 +23,18 @@ function timeFromISO(isoDatetime) {
  * Drawer de création / modification d'un rendez-vous.
  *
  * Props :
- *   doctorId            {number}   ID du docteur connecté
- *   initialAppointment  {object}   Si présent → mode édition
+ *   doctorId            {number}    ID du docteur connecté
+ *   businessSites       {Array}     [{id, name, ville, isPrimary}] — liste des cabinets du médecin
+ *   initialAppointment  {object}    Si présent → mode édition
  *     {
  *       id, startTime, endTime, notes,
- *       patient: { userId, firstName, lastName, email, phone, gender }
+ *       patient: { userId, firstName, lastName, email, phone, gender },
+ *       businessSite: { id, name }
  *     }
  *   onClose   {Function}
  *   onSuccess {Function(message)}
  */
-function AppointmentDrawer({ doctorId, initialAppointment, onClose, onSuccess }) {
+function AppointmentDrawer({ doctorId, businessSites = [], initialAppointment, onClose, onSuccess }) {
   const isEdit = !!initialAppointment;
 
   /* ── Patient ── */
@@ -68,6 +70,12 @@ function AppointmentDrawer({ doctorId, initialAppointment, onClose, onSuccess })
         }
       : null
   );
+
+  /* ── Cabinet ── */
+  const [businessSiteId, setBusinessSiteId] = useState(() => {
+    if (isEdit) return initialAppointment?.businessSite?.id ?? null;
+    return businessSites.find((b) => b.isPrimary)?.id ?? businessSites[0]?.id ?? null;
+  });
 
   /* ── Form ── */
   const [notes, setNotes] = useState(initialAppointment?.notes ?? "");
@@ -119,8 +127,9 @@ function AppointmentDrawer({ doctorId, initialAppointment, onClose, onSuccess })
           endDate: endDT,
           notes,
           status: confirm ? "confirmed" : undefined,
+          businessSiteId,
         })
-      : await createAppointment(doctorId, selectedPatient.id, startDT, endDT, notes);
+      : await createAppointment(doctorId, selectedPatient.id, startDT, endDT, notes, businessSiteId);
 
     setSubmitting(false);
     if (res.status) {
@@ -214,9 +223,27 @@ function AppointmentDrawer({ doctorId, initialAppointment, onClose, onSuccess })
             )}
           </section>
 
-          {/* ── 2. Créneau ── */}
+          {/* ── 2. Cabinet (si plusieurs) ── */}
+          {businessSites.length > 1 && (
+            <section>
+              <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3">2. Cabinet</h3>
+              <select
+                value={businessSiteId ?? ""}
+                onChange={(e) => setBusinessSiteId(Number(e.target.value))}
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm cursor-pointer"
+              >
+                {businessSites.map((bs) => (
+                  <option key={bs.id} value={bs.id}>
+                    {bs.name}{bs.ville ? ` — ${bs.ville}` : ""}{bs.isPrimary ? " (principal)" : ""}
+                  </option>
+                ))}
+              </select>
+            </section>
+          )}
+
+          {/* ── 3. Créneau ── */}
           <section>
-            <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3">2. Créneau disponible</h3>
+            <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3">{businessSites.length > 1 ? "3." : "2."} Créneau disponible</h3>
 
             {isEdit && selectedSlot && (
               <div className="mb-4 flex items-center gap-2 text-xs bg-yellow-900/30 border border-yellow-700/50 text-yellow-300 rounded-lg px-3 py-2">
@@ -302,10 +329,10 @@ function AppointmentDrawer({ doctorId, initialAppointment, onClose, onSuccess })
             )}
           </section>
 
-          {/* ── 3. Commentaire ── */}
+          {/* ── 4. Commentaire ── */}
           <section>
             <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3">
-              3. Commentaire <span className="text-gray-600 normal-case font-normal">(optionnel)</span>
+              {businessSites.length > 1 ? "4." : "3."} Commentaire <span className="text-gray-600 normal-case font-normal">(optionnel)</span>
             </h3>
             <textarea
               value={notes}

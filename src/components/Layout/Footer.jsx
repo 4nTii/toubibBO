@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { APP_NAME } from "../config/config";
+import { APP_NAME } from "../../config/config";
 
 function Footer() {
   const currentYear = new Date().getFullYear();

@@ -21,6 +21,12 @@ Toubib is a web application for managing medical appointments. This repository c
 
 ---
 
+## Install Requirements
+- Docker _(https://www.docker.com/get-started/)_
+- Make _(https://gnuwin32.sourceforge.net/packages/make.htm)_
+
+---
+
 ## Installation
 
 Clone the repository then run:
@@ -79,4 +85,4 @@ This frontend connects to the Toubib Symfony API. Make sure the backend is runni
 
 ## License
 
-Proprietary — all rights reserved.
+Yassine ECHCHOUROUQ — all rights reserved.

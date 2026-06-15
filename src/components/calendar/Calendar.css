@@ -1,0 +1,421 @@
+/* ============================================================
+   Calendar.css — Styles FullCalendar pour Toubib BO (dark theme)
+   ============================================================ */
+
+/* ── Conteneur principal ──────────────────────────────────── */
+.fc-wrapper {
+  background-color: #1f2937;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  color: #f9fafb;
+  position: relative;
+}
+
+/* Mode hauteur fixe (height="100%") : fc-wrapper et .fc remplissent leur parent */
+.fc-wrapper[style*="height"] {
+  display: flex;
+  flex-direction: column;
+}
+.fc-wrapper[style*="height"] > .fc {
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Variables CSS FullCalendar (surcharge du thème) ──────── */
+.fc-wrapper .fc {
+  --fc-border-color: #374151;
+  --fc-button-bg-color: #374151;
+  --fc-button-border-color: #4b5563;
+  --fc-button-hover-bg-color: #4b5563;
+  --fc-button-hover-border-color: #6b7280;
+  --fc-button-active-bg-color: #3b82f6;
+  --fc-button-active-border-color: #2563eb;
+  --fc-button-text-color: #f9fafb;
+  --fc-today-bg-color: rgba(59, 130, 246, 0.08);
+  --fc-now-indicator-color: #ef4444;
+  --fc-highlight-color: rgba(59, 130, 246, 0.15);
+  --fc-page-bg-color: #1f2937;
+  --fc-neutral-bg-color: #111827;
+  --fc-list-event-hover-bg-color: #374151;
+  --fc-small-font-size: 0.8em;
+}
+
+/* ── Textes généraux ──────────────────────────────────────── */
+.fc-wrapper .fc-col-header-cell-cushion,
+.fc-wrapper .fc-daygrid-day-number,
+.fc-wrapper .fc-timegrid-slot-label-cushion,
+.fc-wrapper .fc-list-day-text,
+.fc-wrapper .fc-list-day-side-text,
+.fc-wrapper .fc-list-event-title,
+.fc-wrapper .fc-list-event-time {
+  color: #d1d5db;
+  text-decoration: none;
+}
+
+.fc-wrapper .fc-toolbar-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f9fafb;
+}
+
+/* ── Boutons ─────────────────────────────────────────────── */
+.fc-wrapper .fc-button {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.15s, border-color 0.15s;
+  text-transform: none;
+}
+
+.fc-wrapper .fc-button:focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+  outline: none;
+}
+
+.fc-wrapper .fc-button-primary:not(:disabled).fc-button-active,
+.fc-wrapper .fc-button-primary:not(:disabled):active {
+  background-color: #3b82f6;
+  border-color: #2563eb;
+}
+
+/* ── En-tête des jours ───────────────────────────────────── */
+.fc-wrapper .fc-col-header-cell {
+  background-color: #111827;
+  padding: 0.5rem 0;
+}
+
+/* ── Grille des créneaux ─────────────────────────────────── */
+.fc-wrapper .fc-timegrid-slot        { height: 2.5rem; }
+.fc-wrapper .fc-timegrid-slot-minor  { border-top-style: dotted; border-top-color: #27343f; }
+
+/* ── Événement ───────────────────────────────────────────── */
+.fc-wrapper .fc-event {
+  border-radius: 0.25rem;
+  border-width: 0;
+  border-left-width: 3px;
+  padding: 2px 5px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: filter 0.1s;
+}
+
+.fc-wrapper .fc-event:hover { filter: brightness(1.15); }
+
+.fc-event-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+}
+
+/* Ligne titre : dot de statut + nom patient */
+.fc-event-title-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.fc-event-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.fc-event-title {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* Extrait du commentaire dans la grille */
+.fc-event-notes {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-style: italic;
+}
+
+/* Nom du médecin (agenda partagé) */
+.fc-event-doctor {
+  font-size: 0.7rem;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Vue liste ───────────────────────────────────────────── */
+.fc-wrapper .fc-list-day-cushion    { background-color: #111827; color: #9ca3af; font-size: 0.85rem; }
+.fc-wrapper .fc-list-event:hover td { background-color: #374151; }
+.fc-wrapper .fc-list-empty          { background-color: #1f2937; color: #6b7280; }
+
+/* ── Indicateur maintenant ────────────────────────────────── */
+.fc-wrapper .fc-timegrid-now-indicator-line  { border-color: #ef4444; }
+.fc-wrapper .fc-timegrid-now-indicator-arrow { border-top-color: #ef4444; border-bottom-color: #ef4444; }
+
+/* ── Sélection de plage ──────────────────────────────────── */
+.fc-wrapper .fc-highlight { background-color: rgba(59, 130, 246, 0.2); border-radius: 0.25rem; }
+
+/* ── Légende ────────────────────────────────────────────── */
+.fc-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.625rem 0.875rem;
+  background-color: #111827;
+  border-radius: 0.5rem;
+  border: 1px solid #374151;
+}
+
+.fc-legend-item  { display: flex; align-items: center; gap: 0.4rem; }
+.fc-legend-dot   { display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 50%; flex-shrink: 0; }
+.fc-legend-label { font-size: 0.8rem; color: #d1d5db; white-space: nowrap; }
+
+/* ── Backdrop du popover ────────────────────────────────── */
+.fc-popover-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
+
+/* ── Popover de détail d'événement ──────────────────────── */
+.fc-event-popover {
+  position: fixed;
+  z-index: 1000;
+  width: 280px;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 0.625rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: fc-popover-in 0.12s ease-out;
+}
+
+@keyframes fc-popover-in {
+  from { opacity: 0; transform: scale(0.95) translateY(-4px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+/* En-tête */
+.fc-popover-header {
+  padding: 0.75rem 1rem 0.5rem;
+  border-bottom: 1px solid #334155;
+  position: relative;
+}
+
+.fc-popover-time {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  text-transform: capitalize;
+  margin-bottom: 0.15rem;
+}
+
+.fc-popover-time-range {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.fc-popover-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: #64748b;
+}
+
+.fc-popover-close {
+  position: absolute;
+  top: 0.625rem;
+  right: 0.625rem;
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  transition: color 0.1s, background-color 0.1s;
+}
+
+.fc-popover-close:hover { color: #f1f5f9; background-color: #334155; }
+
+/* Corps */
+.fc-popover-body {
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fc-popover-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Avatar initiales */
+.fc-popover-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.fc-popover-patient {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.fc-popover-patient-name {
+  font-weight: 600;
+  color: #f1f5f9;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc-popover-doctor {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  padding-left: 0.1rem;
+}
+
+/* Commentaire */
+.fc-popover-notes {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  background-color: #0f172a;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.625rem;
+}
+
+.fc-popover-notes p {
+  font-size: 0.82rem;
+  color: #cbd5e1;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.fc-popover-empty {
+  font-size: 0.78rem;
+  color: #475569;
+  font-style: italic;
+}
+
+.fc-popover-no-notes { padding: 0 0.1rem; }
+
+/* ── Badges de statut ───────────────────────────────────── */
+.fc-status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.fc-status-scheduled { background-color: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+.fc-status-confirmed { background-color: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+.fc-status-canceled  { background-color: rgba(239, 68,  68,  0.2); color: #fca5a5; }
+.fc-status-completed { background-color: rgba(107, 114, 128, 0.2); color: #d1d5db; }
+
+/* ── Actions du popover ─────────────────────────────────── */
+.fc-popover-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-top: 1px solid #334155;
+  background-color: #0f172a;
+}
+
+.fc-popover-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.45rem 0.75rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.fc-popover-btn-edit {
+  background-color: #1d4ed8;
+  color: #eff6ff;
+}
+
+.fc-popover-btn-edit:hover { background-color: #2563eb; }
+
+.fc-popover-btn-cancel {
+  background-color: #374151;
+  color: #f9fafb;
+}
+
+.fc-popover-btn-cancel:hover { background-color: #b91c1c; color: #fff; }
+
+/* ── Responsive — tablette ───────────────────────────────── */
+@media (max-width: 768px) {
+  .fc-wrapper { padding: 0.75rem; }
+
+  .fc-wrapper .fc-toolbar {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .fc-wrapper .fc-toolbar-title { font-size: 0.95rem; }
+  .fc-wrapper .fc-button         { font-size: 0.75rem; padding: 0.275rem 0.55rem; }
+
+  .fc-wrapper .fc-dayGridMonth-button,
+  .fc-wrapper .fc-listWeek-button { display: none; }
+
+  .fc-event-popover { width: 260px; }
+}
+
+/* ── Responsive — mobile ─────────────────────────────────── */
+@media (max-width: 480px) {
+  .fc-wrapper { padding: 0.5rem; }
+  .fc-wrapper .fc-toolbar-title { font-size: 0.875rem; }
+
+  .fc-wrapper .fc-dayGridMonth-button,
+  .fc-wrapper .fc-listWeek-button,
+  .fc-wrapper .fc-timeGridWeek-button { display: none; }
+
+  .fc-wrapper .fc-col-header-cell-cushion { font-size: 0.7rem; }
+  .fc-wrapper .fc-timegrid-slot           { height: 2rem; }
+
+  .fc-event-popover {
+    width: calc(100vw - 1rem);
+    left: 0.5rem !important;
+    right: 0.5rem;
+  }
+}

@@ -153,7 +153,7 @@ function App() {
 
         {/* Cabinet - Rendez-vous */}
         <Route
-          path="/cabinet/rendez-vous"
+          path="/cabinet/agenda"
           element={
             <ProtectedRoute>
               <Agenda />

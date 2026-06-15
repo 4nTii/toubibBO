@@ -70,7 +70,7 @@ function Header() {
               >
                 {/* Avatar */}
                 <div
-                  className={`avatar-user-${user?.gender || "male"} w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm`}
+                  className={`avatar-doctor-${user?.gender || "male"} w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm`}
                 ></div>
                 <span className="text-white">Bonjour {userName}</span>
                 <svg

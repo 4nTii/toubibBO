@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/DoctorContext";
 import { getScheduledAppointments } from "../../services/appointmentService";
+import { APP_NAME } from "../../config/config";
 
 const cabinetMenu = [
   {
@@ -33,9 +34,9 @@ const cabinetMenu = [
   },
   {
     label: "Rendez-vous",
-    path: "/cabinet/rendez-vous",
+    path: "/cabinet/agenda",
     children: [
-      { label: "Mon Agenda", path: "/cabinet/rendez-vous" },
+      { label: "Mon Agenda", path: "/cabinet/agenda" },
       { label: "En attente", path: "/cabinet/rendez-vous/attente" },
       { label: "Nouveau rendez-vous", path: "/cabinet/rendez-vous/nouveau" },
     ],
@@ -146,10 +147,12 @@ function CabinetLayout({ children }) {
 
   const isActiveChild = (path) => location.pathname === path;
 
+  const currentYear = new Date().getFullYear();
+
   return (
-    <div className="min-h-screen bg-gray-900">
-      {/* Header horizontal menu */}
-      <nav className="bg-gray-800 border-b border-gray-700">
+    <div className="h-full flex flex-col bg-gray-900">
+      {/* Menu horizontal — fixe dans le flux flex */}
+      <nav className="bg-gray-800 border-b border-gray-700 flex-shrink-0">
         <div className="max-w-full mx-auto px-4">
           <div className="flex items-center justify-between pt-2">
             <div className="flex items-center justify-center space-x-2 w-full">
@@ -178,15 +181,15 @@ function CabinetLayout({ children }) {
                 );
               })}
             </div>
-            <div className="w-20"></div>
+            <div className="w-20" />
           </div>
         </div>
       </nav>
 
-      <div className="flex">
-        {/* Sidebar vertical menu */}
-        <aside className="w-64 bg-gray-800 min-h-[calc(100vh-3.5rem)] border-r border-gray-700">
-          <div className="p-4">
+      <div className="flex flex-1 min-h-0">
+        {/* Sidebar — fixe, ne scroll pas avec le contenu */}
+        <aside className="w-64 bg-gray-800 border-r border-gray-700 flex-shrink-0 flex flex-col overflow-y-auto">
+          <div className="p-4 flex-1">
             <h3 className="text-lg font-semibold text-white mb-4">
               {activeParent.label}
             </h3>
@@ -217,10 +220,15 @@ function CabinetLayout({ children }) {
               })}
             </nav>
           </div>
+          <div className="p-4 border-t border-gray-700 flex-shrink-0">
+            <p className="text-center text-gray-500 text-xs">
+              {APP_NAME} &copy; {currentYear}
+            </p>
+          </div>
         </aside>
 
-        {/* Main content */}
-        <main className="flex-1 p-6">{children}</main>
+        {/* Contenu principal — seule zone scrollable */}
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
   );

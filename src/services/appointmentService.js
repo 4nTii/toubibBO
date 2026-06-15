@@ -52,6 +52,18 @@ export async function getAvailableSlots(doctorId, startDate, endDate) {
   return res.json();
 }
 
+/**
+ * Données complètes pour le calendrier (cabinets + RDV propres + RDV partagés).
+ * @param {number|null} businessSiteId  Cabinet sélectionné (null = cabinet principal)
+ */
+export async function getCalendarData(businessSiteId = null) {
+  const params = businessSiteId ? `?businessSiteId=${businessSiteId}` : "";
+  const res = await fetch(`${API_URL}/doctor/calendar${params}`, {
+    credentials: "include",
+  });
+  return res.json();
+}
+
 export async function createAppointment(doctorId, userId, startDateTime, endDateTime, notes) {
   const res = await fetch(`${API_URL}/doctor/${doctorId}/set-appointment`, {
     method: "POST",

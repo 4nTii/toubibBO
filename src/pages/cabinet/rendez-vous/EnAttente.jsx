@@ -328,13 +328,27 @@ function SlotPicker({ doctorId, selectedDate, selectedSlot, onSelect }) {
 function NouveauRdvPage() {
   const { doctor } = useDoctor();
 
+  const businessSites = (doctor?.doctorBusinessSites ?? []).map((dbs) => ({
+    id: dbs.businessSite.id,
+    name: dbs.businessSite.name,
+    ville: dbs.businessSite.ville,
+    isPrimary: dbs.isPrimary,
+  }));
+
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [selectedBusinessSiteId, setSelectedBusinessSiteId] = useState(null);
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [feedback, setFeedback] = useState(null);
+
+  useEffect(() => {
+    if (businessSites.length > 0 && !selectedBusinessSiteId) {
+      setSelectedBusinessSiteId(businessSites.find((b) => b.isPrimary)?.id ?? businessSites[0]?.id ?? null);
+    }
+  }, [doctor]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const resetForm = () => {
     setSelectedPatient(null);
@@ -350,7 +364,7 @@ function NouveauRdvPage() {
     setSubmitError(null);
     const startDT = `${selectedDate}T${selectedSlot.start}:00`;
     const endDT = `${selectedDate}T${selectedSlot.end}:00`;
-    const res = await createAppointment(doctor.id, selectedPatient.id, startDT, endDT, notes);
+    const res = await createAppointment(doctor.id, selectedPatient.id, startDT, endDT, notes, selectedBusinessSiteId);
     setSubmitting(false);
     if (res.status) {
       window.dispatchEvent(new Event("scheduled-appointments-updated"));
@@ -427,10 +441,31 @@ function NouveauRdvPage() {
                 )}
               </div>
 
+              {/* ── Cabinet (si plusieurs) ── */}
+              {businessSites.length > 1 && (
+                <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
+                  <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">2</span>
+                    Cabinet
+                  </h3>
+                  <select
+                    value={selectedBusinessSiteId ?? ""}
+                    onChange={(e) => setSelectedBusinessSiteId(Number(e.target.value))}
+                    className="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm cursor-pointer"
+                  >
+                    {businessSites.map((bs) => (
+                      <option key={bs.id} value={bs.id}>
+                        {bs.name}{bs.ville ? ` — ${bs.ville}` : ""}{bs.isPrimary ? " (principal)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               {/* ── Notes ── */}
               <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
                 <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">3</span>
+                  <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">{businessSites.length > 1 ? "3" : "3"}</span>
                   Commentaire <span className="text-gray-600 normal-case font-normal text-xs">(optionnel)</span>
                 </h3>
                 <textarea
@@ -461,6 +496,18 @@ function NouveauRdvPage() {
                         {selectedPatient ? `${selectedPatient.firstName} ${selectedPatient.lastName}` : "Patient non sélectionné"}
                       </span>
                     </div>
+                    {businessSites.length > 1 && (
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        <span className={selectedBusinessSiteId ? "text-white" : "text-gray-500"}>
+                          {selectedBusinessSiteId
+                            ? businessSites.find((b) => b.id === selectedBusinessSiteId)?.name ?? "Cabinet sélectionné"
+                            : "Cabinet non sélectionné"}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex items-center gap-2">
                       <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -499,7 +546,7 @@ function NouveauRdvPage() {
             {/* ── Right: Slots ── */}
             <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">2</span>
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">{businessSites.length > 1 ? "3" : "2"}</span>
                 Créneau disponible
               </h3>
               {doctor?.id ? (

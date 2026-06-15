@@ -17,12 +17,12 @@ export async function updateAppointmentStatus(id, status) {
   return res.json();
 }
 
-export async function updateAppointmentFull(id, { idUser, startDate, endDate, notes, status }) {
+export async function updateAppointmentFull(id, { idUser, startDate, endDate, notes, status, businessSiteId }) {
   const res = await fetch(`${API_URL}/doctor/appointments/${id}`, {
     method: "PATCH",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ idUser, startDate, endDate, notes: notes || null, status }),
+    body: JSON.stringify({ idUser, startDate, endDate, notes: notes || null, status, ...(businessSiteId ? { businessSiteId } : {}) }),
   });
   return res.json();
 }
@@ -64,7 +64,56 @@ export async function getCalendarData(businessSiteId = null) {
   return res.json();
 }
 
-export async function createAppointment(doctorId, userId, startDateTime, endDateTime, notes) {
+export async function getMyPatients({ page = 1, limit = 20 } = {}) {
+  const res = await fetch(`${API_URL}/doctor/patients?page=${page}&limit=${limit}`, {
+    credentials: "include",
+  });
+  return res.json();
+}
+
+export async function updatePatient(id, data) {
+  const res = await fetch(`${API_URL}/doctor/patients/${id}`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function removePatient(id) {
+  const res = await fetch(`${API_URL}/doctor/patients/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  return res.json();
+}
+
+export async function getPatientAppointments(id, { page = 1, limit = 10 } = {}) {
+  const res = await fetch(`${API_URL}/doctor/patients/${id}/appointments?page=${page}&limit=${limit}`, {
+    credentials: "include",
+  });
+  return res.json();
+}
+
+export async function getPatientHistory(id, { page = 1, limit = 10 } = {}) {
+  const res = await fetch(`${API_URL}/doctor/patients/${id}/history?page=${page}&limit=${limit}`, {
+    credentials: "include",
+  });
+  return res.json();
+}
+
+export async function addPatientHistory(id, { notes }) {
+  const res = await fetch(`${API_URL}/doctor/patients/${id}/history`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ notes }),
+  });
+  return res.json();
+}
+
+export async function createAppointment(doctorId, userId, startDateTime, endDateTime, notes, businessSiteId = null) {
   const res = await fetch(`${API_URL}/doctor/${doctorId}/set-appointment`, {
     method: "POST",
     credentials: "include",
@@ -74,6 +123,7 @@ export async function createAppointment(doctorId, userId, startDateTime, endDate
       startDate: startDateTime,
       endDate: endDateTime,
       notes: notes || null,
+      ...(businessSiteId ? { businessSiteId } : {}),
     }),
   });
   return res.json();

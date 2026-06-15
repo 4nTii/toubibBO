@@ -33,9 +33,9 @@ const cabinetMenu = [
   },
   {
     label: "Rendez-vous",
-    path: "/cabinet/rendez-vous",
+    path: "/cabinet/agenda",
     children: [
-      { label: "Mon Agenda", path: "/cabinet/rendez-vous" },
+      { label: "Mon Agenda", path: "/cabinet/agenda" },
       { label: "En attente", path: "/cabinet/rendez-vous/attente" },
       { label: "Nouveau rendez-vous", path: "/cabinet/rendez-vous/nouveau" },
     ],

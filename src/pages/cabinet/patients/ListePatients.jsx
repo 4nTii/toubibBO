@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Layout from "../../../components/Layout/Layout";
 import CabinetLayout from "../../../components/Layout/CabinetLayout";
 import {
@@ -9,6 +9,7 @@ import {
   getPatientHistory,
   addPatientHistory,
 } from "../../../services/appointmentService";
+import TableDraw from "../../../components/TableDraw/TableDraw";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -59,66 +60,7 @@ function StatusBadge({ status }) {
 
 const MOCK_DOCS = ["Certificat", "Arrêt maladie oct 2024", "Ordonnance 2025"];
 
-// ─── Pagination ───────────────────────────────────────────────────────────────
-
-function Pagination({ page, totalPages, total, label, onPage }) {
-  if (totalPages <= 1 && total === 0) return null;
-  return (
-    <div className="flex items-center justify-between px-4 py-3 border-t border-gray-700 text-xs text-gray-400">
-      <span>{total} {label}{total > 1 ? "s" : ""} — page {page}/{totalPages || 1}</span>
-      <div className="flex gap-1">
-        <PagBtn onClick={() => onPage(1)} disabled={page === 1} label="«" />
-        <PagBtn onClick={() => onPage(page - 1)} disabled={page === 1} label="‹" />
-        {Array.from({ length: totalPages }, (_, i) => i + 1)
-          .filter((p) => Math.abs(p - page) <= 2)
-          .map((p) => (
-            <button
-              key={p}
-              onClick={() => onPage(p)}
-              className={`min-w-[2rem] h-7 rounded text-xs transition ${
-                p === page ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white hover:bg-gray-600"
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-        <PagBtn onClick={() => onPage(page + 1)} disabled={page === totalPages} label="›" />
-        <PagBtn onClick={() => onPage(totalPages)} disabled={page === totalPages} label="»" />
-      </div>
-    </div>
-  );
-}
-
-function PagBtn({ onClick, disabled, label }) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className="w-7 h-7 rounded text-gray-400 hover:text-white hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition text-xs"
-    >
-      {label}
-    </button>
-  );
-}
-
-// ─── Select filter ────────────────────────────────────────────────────────────
-
-function FilterSelect({ value, onChange, placeholder, options }) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="bg-gray-700 border border-gray-600 text-sm text-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-blue-500 cursor-pointer"
-    >
-      <option value="">{placeholder}</option>
-      {options.map((o) => (
-        <option key={o} value={o}>{o}</option>
-      ))}
-    </select>
-  );
-}
-
-// ─── Modal shell (Edit / Delete only) ────────────────────────────────────────
+// ─── Modal shell ──────────────────────────────────────────────────────────────
 
 function Modal({ title, onClose, children }) {
   const ref = useRef();
@@ -136,7 +78,7 @@ function Modal({ title, onClose, children }) {
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700 shrink-0">
           <h2 className="text-white font-semibold text-base">{title}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white transition">
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition cursor-pointer">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -281,44 +223,20 @@ function InfoItem({ label, value }) {
   );
 }
 
-function LoadingRow() {
-  return (
-    <div className="flex items-center justify-center py-12 text-gray-400 text-sm gap-2">
-      <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-      </svg>
-      Chargement…
-    </div>
-  );
-}
-
-function EmptyRow({ msg }) {
-  return <div className="text-center py-12 text-gray-500 text-sm">{msg}</div>;
-}
-
-// ─── Detail panel (inline, 100% de la div content) ───────────────────────────
+// ─── Detail panel ─────────────────────────────────────────────────────────────
 
 function DetailPanel({ patient, onClose, onEdit, onDelete }) {
   const [tab, setTab] = useState("appointments");
 
   // Appointments
-  const [appts, setAppts]         = useState([]);
-  const [apptPage, setApptPage]   = useState(1);
-  const [apptMeta, setApptMeta]   = useState({ total: 0, totalPages: 1 });
+  const [appts, setAppts]             = useState([]);
   const [apptLoading, setApptLoading] = useState(false);
-  const [filterApptDoctor,   setFilterApptDoctor]   = useState("");
-  const [filterApptSpec,     setFilterApptSpec]     = useState("");
   const [filterApptDateFrom, setFilterApptDateFrom] = useState("");
   const [filterApptDateTo,   setFilterApptDateTo]   = useState("");
 
   // History
-  const [hist, setHist]           = useState([]);
-  const [histPage, setHistPage]   = useState(1);
-  const [histMeta, setHistMeta]   = useState({ total: 0, totalPages: 1 });
+  const [hist, setHist]               = useState([]);
   const [histLoading, setHistLoading] = useState(false);
-  const [filterHistDoctor,   setFilterHistDoctor]   = useState("");
-  const [filterHistSpec,     setFilterHistSpec]     = useState("");
   const [filterHistDateFrom, setFilterHistDateFrom] = useState("");
   const [filterHistDateTo,   setFilterHistDateTo]   = useState("");
 
@@ -328,52 +246,34 @@ function DetailPanel({ patient, onClose, onEdit, onDelete }) {
   const [noteError,    setNoteError]    = useState(null);
   const [noteFeedback, setNoteFeedback] = useState(null);
 
-  const fetchAppts = useCallback(async (p) => {
+  const fetchAppts = useCallback(async () => {
     setApptLoading(true);
-    const res = await getPatientAppointments(patient.id, { page: p });
-    if (res?.status) {
-      setAppts(res.data.appointments ?? []);
-      setApptMeta({ total: res.data.total, totalPages: res.data.totalPages });
-    }
+    const res = await getPatientAppointments(patient.id, { page: 1, limit: 200 });
+    if (res?.status) setAppts(res.data.appointments ?? []);
     setApptLoading(false);
   }, [patient.id]);
 
-  const fetchHist = useCallback(async (p) => {
+  const fetchHist = useCallback(async () => {
     setHistLoading(true);
-    const res = await getPatientHistory(patient.id, { page: p });
-    if (res?.status) {
-      setHist(res.data.history ?? []);
-      setHistMeta({ total: res.data.total, totalPages: res.data.totalPages });
-    }
+    const res = await getPatientHistory(patient.id, { page: 1, limit: 200 });
+    if (res?.status) setHist(res.data.history ?? []);
     setHistLoading(false);
   }, [patient.id]);
 
-  useEffect(() => { fetchAppts(apptPage); }, [fetchAppts, apptPage]);
-  useEffect(() => { fetchHist(histPage); },  [fetchHist,  histPage]);
-
-  // Derived filter options
-  const apptDoctors = [...new Set(appts.map((a) => `${a.doctorFirstName ?? ""} ${a.doctorLastName ?? ""}`.trim()).filter(Boolean))];
-  const apptSpecs   = [...new Set(appts.map((a) => a.speciality).filter(Boolean))];
-  const histDoctors = [...new Set(hist.map((h)  => `${h.doctorFirstName ?? ""} ${h.doctorLastName ?? ""}`.trim()).filter(Boolean))];
-  const histSpecs   = [...new Set(hist.map((h)  => h.speciality).filter(Boolean))];
+  useEffect(() => { fetchAppts(); }, [fetchAppts]);
+  useEffect(() => { fetchHist(); },  [fetchHist]);
 
   const filteredAppts = appts.filter((a) => {
-    const doc  = `${a.doctorFirstName ?? ""} ${a.doctorLastName ?? ""}`.trim();
     const date = (a.startTime ?? "").slice(0, 10);
     return (
-      (!filterApptDoctor   || doc  === filterApptDoctor) &&
-      (!filterApptSpec     || (a.speciality ?? "") === filterApptSpec) &&
       (!filterApptDateFrom || date >= filterApptDateFrom) &&
       (!filterApptDateTo   || date <= filterApptDateTo)
     );
   });
 
   const filteredHist = hist.filter((h) => {
-    const doc  = `${h.doctorFirstName ?? ""} ${h.doctorLastName ?? ""}`.trim();
     const date = (h.date ?? "").slice(0, 10);
     return (
-      (!filterHistDoctor   || doc  === filterHistDoctor) &&
-      (!filterHistSpec     || (h.speciality ?? "") === filterHistSpec) &&
       (!filterHistDateFrom || date >= filterHistDateFrom) &&
       (!filterHistDateTo   || date <= filterHistDateTo)
     );
@@ -389,7 +289,7 @@ function DetailPanel({ patient, onClose, onEdit, onDelete }) {
         setNewNote("");
         setNoteFeedback("Note ajoutée avec succès.");
         setTimeout(() => setNoteFeedback(null), 3000);
-        fetchHist(histPage);
+        fetchHist();
       } else {
         setNoteError(res?.message ?? "Erreur lors de l'ajout.");
       }
@@ -399,7 +299,110 @@ function DetailPanel({ patient, onClose, onEdit, onDelete }) {
     setAddingNote(false);
   };
 
-  const selectCls = "bg-gray-700 border border-gray-600 text-sm text-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-blue-500 cursor-pointer";
+  /* ── Colonnes rendez-vous ── */
+  const apptColumns = useMemo(() => [
+    {
+      id: "date",
+      header: "Date",
+      accessorFn: (a) => a.startTime ?? "",
+      cell: ({ row: { original: a } }) => (
+        <div>
+          <div className="text-gray-300 whitespace-nowrap">{fmtDateTime(a.startTime)}</div>
+          <div className="text-xs text-gray-500">→ {fmtDateTime(a.endTime)}</div>
+        </div>
+      ),
+    },
+    {
+      id: "doctor",
+      header: "Médecin",
+      accessorFn: (a) => `${a.doctorFirstName ?? ""} ${a.doctorLastName ?? ""} ${a.speciality ?? ""}`,
+      cell: ({ row: { original: a } }) => (
+        <div className="text-gray-300">
+          {a.doctorFirstName} {a.doctorLastName}
+          {a.speciality && <div className="text-xs text-gray-500">{a.speciality}</div>}
+        </div>
+      ),
+    },
+    {
+      id: "businessSite",
+      header: "Cabinet",
+      accessorFn: (a) => a.businessSite ?? "",
+      cell: ({ row: { original: a } }) => (
+        <span className="text-gray-400 text-xs">{a.businessSite ?? "—"}</span>
+      ),
+    },
+    {
+      id: "notes",
+      header: "Commentaire",
+      accessorFn: (a) => a.notes ?? "",
+      cell: ({ row: { original: a } }) => (
+        a.notes ? (
+          <span className="text-gray-400 text-xs line-clamp-2 max-w-[12rem]">{a.notes}</span>
+        ) : (
+          <span className="text-gray-600 text-xs">—</span>
+        )
+      ),
+    },
+    {
+      id: "documents",
+      header: "Documents",
+      enableSorting: false,
+      enableGlobalFilter: false,
+      cell: () => (
+        <div className="flex flex-wrap gap-1">
+          {MOCK_DOCS.map((doc) => (
+            <button
+              key={doc}
+              onClick={() => alert("Fonctionnalité à venir")}
+              className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-gray-700 text-blue-400 hover:bg-gray-600 hover:text-blue-300 transition whitespace-nowrap cursor-pointer"
+            >
+              <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              {doc}
+            </button>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: "status",
+      header: "Statut",
+      accessorFn: (a) => a.status ?? "",
+      cell: ({ row: { original: a } }) => <StatusBadge status={a.status} />,
+    },
+  ], []);
+
+  /* ── Colonnes historique ── */
+  const histColumns = useMemo(() => [
+    {
+      id: "date",
+      header: "Date",
+      accessorFn: (h) => h.date ?? "",
+      cell: ({ row: { original: h } }) => (
+        <span className="text-gray-300 whitespace-nowrap">{fmtDateTime(h.date)}</span>
+      ),
+    },
+    {
+      id: "doctor",
+      header: "Médecin",
+      accessorFn: (h) => `${h.doctorFirstName ?? ""} ${h.doctorLastName ?? ""} ${h.speciality ?? ""}`,
+      cell: ({ row: { original: h } }) => (
+        <div className="text-gray-300">
+          {h.doctorFirstName} {h.doctorLastName}
+          {h.speciality && <div className="text-xs text-gray-500">{h.speciality}</div>}
+        </div>
+      ),
+    },
+    {
+      id: "notes",
+      header: "Notes",
+      accessorFn: (h) => h.notes ?? "",
+      cell: ({ row: { original: h } }) => (
+        <span className="text-gray-400 text-xs">{h.notes ?? <span className="text-gray-600">—</span>}</span>
+      ),
+    },
+  ], []);
 
   return (
     <div className="bg-gray-800 rounded-xl border border-gray-700 flex flex-col">
@@ -427,13 +430,13 @@ function DetailPanel({ patient, onClose, onEdit, onDelete }) {
         <div className="ml-auto flex gap-2 shrink-0">
           <button
             onClick={() => onEdit(patient)}
-            className="px-3 py-1.5 rounded-lg text-sm bg-gray-700 hover:bg-gray-600 text-gray-200 transition cursor-pointer"
+            className="px-3 py-1.5 rounded-lg text-sm bg-gray-700 hover:bg-gray-600 text-white transition cursor-pointer"
           >
             Modifier
           </button>
           <button
             onClick={() => onDelete(patient)}
-            className="px-3 py-1.5 rounded-lg text-sm bg-red-900/40 hover:bg-red-700 text-red-300 hover:text-white transition cursor-pointer"
+            className="px-3 py-1.5 rounded-lg text-sm bg-red-900/40 hover:bg-red-700 text-white transition cursor-pointer"
           >
             Retirer
           </button>
@@ -442,10 +445,10 @@ function DetailPanel({ patient, onClose, onEdit, onDelete }) {
 
       {/* Info strip */}
       <div className="px-6 py-3 border-b border-gray-700 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm shrink-0">
-        <InfoItem label="Date de naissance"     value={fmt(patient.birthDay)} />
-        <InfoItem label="N° sécurité sociale"   value={formatSocialNumber(patient.socialNumber) || "—"} />
-        <InfoItem label="Adresse"               value={patient.address ?? "—"} />
-        <InfoItem label="Inscrit le"            value={fmt(patient.dateInscription)} />
+        <InfoItem label="Date de naissance"   value={fmt(patient.birthDay)} />
+        <InfoItem label="N° sécurité sociale" value={formatSocialNumber(patient.socialNumber) || "—"} />
+        <InfoItem label="Adresse"             value={patient.address ?? "—"} />
+        <InfoItem label="Inscrit le"          value={fmt(patient.dateInscription)} />
       </div>
 
       {/* Tabs */}
@@ -457,7 +460,7 @@ function DetailPanel({ patient, onClose, onEdit, onDelete }) {
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`py-3 px-4 text-sm font-medium border-b-2 transition -mb-px ${
+            className={`py-3 px-4 text-sm font-medium border-b-2 transition -mb-px cursor-pointer ${
               tab === t.key
                 ? "border-blue-500 text-blue-400"
                 : "border-transparent text-gray-400 hover:text-white"
@@ -470,22 +473,20 @@ function DetailPanel({ patient, onClose, onEdit, onDelete }) {
 
       {/* ── Appointments tab ── */}
       {tab === "appointments" && (
-        <div className="flex flex-col min-h-0">
-          {/* Filters */}
-          <div className="flex flex-wrap items-center gap-3 px-6 py-3 border-b border-gray-700 shrink-0">
-            <FilterSelect
-              value={filterApptDoctor}
-              onChange={setFilterApptDoctor}
-              placeholder="Tous les médecins"
-              options={apptDoctors}
-            />
-            <FilterSelect
-              value={filterApptSpec}
-              onChange={setFilterApptSpec}
-              placeholder="Toutes les spécialités"
-              options={apptSpecs}
-            />
-            <div className="flex items-center gap-2">
+        <TableDraw
+          data={filteredAppts}
+          columns={apptColumns}
+          loading={apptLoading}
+          pagination
+          sorting
+          filtering
+          pageSize={10}
+          compact
+          emptyMessage="Aucun rendez-vous trouvé."
+          hover
+          className="flex flex-col"
+          toolbarExtra={
+            <div className="flex items-center gap-2 shrink-0">
               <span className="text-xs text-gray-500 whitespace-nowrap">Du</span>
               <input
                 type="date"
@@ -500,95 +501,23 @@ function DetailPanel({ patient, onClose, onEdit, onDelete }) {
                 onChange={(e) => setFilterApptDateTo(e.target.value)}
                 className="bg-gray-700 border border-gray-600 text-sm text-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-blue-500 cursor-pointer"
               />
+              {(filterApptDateFrom || filterApptDateTo) && (
+                <button
+                  onClick={() => { setFilterApptDateFrom(""); setFilterApptDateTo(""); }}
+                  className="text-xs text-gray-400 hover:text-white transition cursor-pointer"
+                >
+                  ✕
+                </button>
+              )}
             </div>
-            {(filterApptDoctor || filterApptSpec || filterApptDateFrom || filterApptDateTo) && (
-              <button
-                onClick={() => { setFilterApptDoctor(""); setFilterApptSpec(""); setFilterApptDateFrom(""); setFilterApptDateTo(""); }}
-                className="text-xs text-gray-400 hover:text-white transition cursor-pointer"
-              >
-                Réinitialiser
-              </button>
-            )}
-          </div>
-
-          {/* Table */}
-          <div className="overflow-x-auto flex-1">
-            {apptLoading ? (
-              <LoadingRow />
-            ) : filteredAppts.length === 0 ? (
-              <EmptyRow msg="Aucun rendez-vous trouvé." />
-            ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
-                    <th className="text-left px-6 py-3">Date</th>
-                    <th className="text-left px-6 py-3">Médecin</th>
-                    <th className="text-left px-6 py-3">Cabinet</th>
-                    <th className="text-left px-6 py-3">Commentaire</th>
-                    <th className="text-left px-6 py-3">Documents</th>
-                    <th className="text-left px-6 py-3">Statut</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-700">
-                  {filteredAppts.map((a) => (
-                    <tr key={a.id} className="hover:bg-gray-700/30">
-                      <td className="px-6 py-3 text-gray-300 whitespace-nowrap">
-                        <div>{fmtDateTime(a.startTime)}</div>
-                        <div className="text-xs text-gray-500">→ {fmtDateTime(a.endTime)}</div>
-                      </td>
-                      <td className="px-6 py-3 text-gray-300">
-                        {a.doctorFirstName} {a.doctorLastName}
-                        {a.speciality && (
-                          <div className="text-xs text-gray-500">{a.speciality}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-3 text-gray-400 text-xs">{a.businessSite ?? "—"}</td>
-                      <td className="px-6 py-3 text-gray-400 text-xs max-w-[12rem]">
-                        {a.notes ? (
-                          <span className="line-clamp-2">{a.notes}</span>
-                        ) : (
-                          <span className="text-gray-600">—</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-3">
-                        <div className="flex flex-wrap gap-1">
-                          {MOCK_DOCS.map((doc) => (
-                            <button
-                              key={doc}
-                              onClick={() => alert("Fonctionnalité à venir")}
-                              className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-gray-700 text-blue-400 hover:bg-gray-600 hover:text-blue-300 transition whitespace-nowrap cursor-pointer"
-                            >
-                              <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                              </svg>
-                              {doc}
-                            </button>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="px-6 py-3">
-                        <StatusBadge status={a.status} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-          <Pagination
-            page={apptPage}
-            totalPages={apptMeta.totalPages}
-            total={apptMeta.total}
-            label="rendez-vous"
-            onPage={(p) => setApptPage(p)}
-          />
-        </div>
+          }
+        />
       )}
 
       {/* ── History tab ── */}
       {tab === "history" && (
-        <div className="flex flex-col min-h-0">
-          {/* Add note form */}
+        <div className="flex flex-col">
+          {/* Ajouter une note */}
           <div className="px-6 py-4 border-b border-gray-700 shrink-0">
             <p className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">Ajouter une note médicale</p>
             {noteFeedback && (
@@ -619,86 +548,44 @@ function DetailPanel({ patient, onClose, onEdit, onDelete }) {
             </div>
           </div>
 
-          {/* Filters */}
-          <div className="flex flex-wrap items-center gap-3 px-6 py-3 border-b border-gray-700 shrink-0">
-            <FilterSelect
-              value={filterHistDoctor}
-              onChange={setFilterHistDoctor}
-              placeholder="Tous les médecins"
-              options={histDoctors}
-            />
-            <FilterSelect
-              value={filterHistSpec}
-              onChange={setFilterHistSpec}
-              placeholder="Toutes les spécialités"
-              options={histSpecs}
-            />
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500 whitespace-nowrap">Du</span>
-              <input
-                type="date"
-                value={filterHistDateFrom}
-                onChange={(e) => setFilterHistDateFrom(e.target.value)}
-                className="bg-gray-700 border border-gray-600 text-sm text-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-blue-500 cursor-pointer"
-              />
-              <span className="text-xs text-gray-500 whitespace-nowrap">au</span>
-              <input
-                type="date"
-                value={filterHistDateTo}
-                onChange={(e) => setFilterHistDateTo(e.target.value)}
-                className="bg-gray-700 border border-gray-600 text-sm text-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-blue-500 cursor-pointer"
-              />
-            </div>
-            {(filterHistDoctor || filterHistSpec || filterHistDateFrom || filterHistDateTo) && (
-              <button
-                onClick={() => { setFilterHistDoctor(""); setFilterHistSpec(""); setFilterHistDateFrom(""); setFilterHistDateTo(""); }}
-                className="text-xs text-gray-400 hover:text-white transition cursor-pointer"
-              >
-                Réinitialiser
-              </button>
-            )}
-          </div>
-
-          {/* Table */}
-          <div className="overflow-x-auto flex-1">
-            {histLoading ? (
-              <LoadingRow />
-            ) : filteredHist.length === 0 ? (
-              <EmptyRow msg="Aucun historique médical." />
-            ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
-                    <th className="text-left px-6 py-3">Date</th>
-                    <th className="text-left px-6 py-3">Médecin</th>
-                    <th className="text-left px-6 py-3">Notes</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-700">
-                  {filteredHist.map((h) => (
-                    <tr key={h.id} className="hover:bg-gray-700/30">
-                      <td className="px-6 py-3 text-gray-300 whitespace-nowrap">{fmtDateTime(h.date)}</td>
-                      <td className="px-6 py-3 text-gray-300">
-                        {h.doctorFirstName} {h.doctorLastName}
-                        {h.speciality && (
-                          <div className="text-xs text-gray-500">{h.speciality}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-3 text-gray-400 text-xs max-w-xs">
-                        {h.notes ?? <span className="text-gray-600">—</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-          <Pagination
-            page={histPage}
-            totalPages={histMeta.totalPages}
-            total={histMeta.total}
-            label="entrée"
-            onPage={(p) => setHistPage(p)}
+          <TableDraw
+            data={filteredHist}
+            columns={histColumns}
+            loading={histLoading}
+            pagination
+            sorting
+            filtering
+            pageSize={10}
+            compact
+            emptyMessage="Aucun historique médical."
+            hover
+            className="flex flex-col"
+            toolbarExtra={
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs text-gray-500 whitespace-nowrap">Du</span>
+                <input
+                  type="date"
+                  value={filterHistDateFrom}
+                  onChange={(e) => setFilterHistDateFrom(e.target.value)}
+                  className="bg-gray-700 border border-gray-600 text-sm text-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-blue-500 cursor-pointer"
+                />
+                <span className="text-xs text-gray-500 whitespace-nowrap">au</span>
+                <input
+                  type="date"
+                  value={filterHistDateTo}
+                  onChange={(e) => setFilterHistDateTo(e.target.value)}
+                  className="bg-gray-700 border border-gray-600 text-sm text-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-blue-500 cursor-pointer"
+                />
+                {(filterHistDateFrom || filterHistDateTo) && (
+                  <button
+                    onClick={() => { setFilterHistDateFrom(""); setFilterHistDateTo(""); }}
+                    className="text-xs text-gray-400 hover:text-white transition cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            }
           />
         </div>
       )}
@@ -711,9 +598,6 @@ function DetailPanel({ patient, onClose, onEdit, onDelete }) {
 export default function ListePatients() {
   const [patients, setPatients]   = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [search, setSearch]       = useState("");
-  const [page, setPage]           = useState(1);
-  const [meta, setMeta]           = useState({ total: 0, totalPages: 1 });
   const [feedback, setFeedback]   = useState(null);
 
   const [editPatient,   setEditPatient]   = useState(null);
@@ -727,28 +611,93 @@ export default function ListePatients() {
 
   const fetchPatients = useCallback(async () => {
     setIsLoading(true);
-    const res = await getMyPatients({ page, limit: 20 });
-    if (res?.status) {
-      setPatients(res.data.patients);
-      setMeta({ total: res.data.total, totalPages: res.data.totalPages });
-    }
+    const res = await getMyPatients({ page: 1, limit: 200 });
+    if (res?.status) setPatients(res.data.patients);
     setIsLoading(false);
-  }, [page]);
+  }, []);
 
-  useEffect(() => { setPage(1); }, [search]);
   useEffect(() => { fetchPatients(); }, [fetchPatients]);
 
-  const filtered = search.trim()
-    ? patients.filter((p) => {
-        const q = search.toLowerCase();
-        return (
-          p.firstName.toLowerCase().includes(q) ||
-          p.lastName.toLowerCase().includes(q) ||
-          p.email.toLowerCase().includes(q) ||
-          (p.phone && p.phone.includes(q))
-        );
-      })
-    : patients;
+  const patientColumns = useMemo(() => [
+    {
+      id: "patient",
+      header: "Patient",
+      accessorFn: (row) => `${row.firstName} ${row.lastName}`,
+      cell: ({ row: { original: p } }) => (
+        <div className="flex items-center gap-3">
+          <div className={`avatar-user-${p.gender || "male"} w-9 h-9 rounded-full shrink-0`} />
+          <div className="min-w-0">
+            <div className="text-white font-medium truncate">{p.firstName} {p.lastName}</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "contact",
+      header: "Contact",
+      accessorFn: (row) => `${row.email} ${row.phone ?? ""}`,
+      cell: ({ row: { original: p } }) => (
+        <div className="min-w-0">
+          <div className="text-gray-300 truncate">{p.email}</div>
+          <div className="text-gray-400 text-xs">{p.phone}</div>
+        </div>
+      ),
+    },
+    {
+      id: "birthDay",
+      header: "Naissance",
+      accessorFn: (row) => row.birthDay ?? "",
+      cell: ({ row: { original: p } }) => (
+        <span className="text-gray-400 text-xs">{fmt(p.birthDay)}</span>
+      ),
+    },
+    {
+      id: "socialNumber",
+      header: "N° sécu.",
+      accessorFn: (row) => row.socialNumber ?? "",
+      cell: ({ row: { original: p } }) => (
+        <span className="text-gray-400 text-xs font-mono">
+          {formatSocialNumber(p.socialNumber) || "—"}
+        </span>
+      ),
+    },
+  ], []);
+
+  const patientActions = useMemo(() => [
+    {
+      label: "Voir",
+      variant: "info",
+      icon: (
+        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+      ),
+      onClick: (p) => setDetailPatient(p),
+    },
+    {
+      label: "Modifier",
+      variant: "default",
+      icon: (
+        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+      ),
+      onClick: (p) => setEditPatient(p),
+    },
+    {
+      label: "Retirer",
+      variant: "danger",
+      icon: (
+        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+      ),
+      onClick: (p) => setDeletePatient(p),
+    },
+  ], []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSaved = (updated) => {
     setPatients((prev) => prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)));
@@ -758,7 +707,6 @@ export default function ListePatients() {
 
   const handleDeleted = (id) => {
     setPatients((prev) => prev.filter((p) => p.id !== id));
-    setMeta((m) => ({ ...m, total: m.total - 1 }));
     if (detailPatient?.id === id) setDetailPatient(null);
     showFeedback("Patient retiré de votre liste.");
   };
@@ -803,109 +751,25 @@ export default function ListePatients() {
               </div>
             )}
 
-            {/* Search */}
-            <div className="relative max-w-md">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Rechercher par nom, email, téléphone…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
-              />
-            </div>
-
-            {/* Table */}
-            <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-              {isLoading ? (
-                <div className="flex items-center justify-center py-20 text-gray-400 gap-2">
-                  <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                  </svg>
-                  Chargement…
-                </div>
-              ) : filtered.length === 0 ? (
-                <div className="text-center py-20 text-gray-400">
-                  {search ? "Aucun patient ne correspond à votre recherche." : "Aucun patient trouvé."}
-                </div>
-              ) : (
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-700 text-gray-400 text-xs uppercase tracking-wider">
-                      <th className="text-left px-6 py-3">Patient</th>
-                      <th className="text-left px-6 py-3">Contact</th>
-                      <th className="text-left px-6 py-3 hidden md:table-cell">Naissance</th>
-                      <th className="text-left px-6 py-3 hidden lg:table-cell">N° sécu.</th>
-                      <th className="text-right px-6 py-3">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-700">
-                    {filtered.map((p) => (
-                      <tr
-                        key={p.id}
-                        className="hover:bg-gray-700/30 transition cursor-pointer"
-                        onClick={() => setDetailPatient(p)}
-                      >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className={`avatar-user-${p.gender || "male"} w-9 h-9 rounded-full shrink-0`} />
-                            <div className="min-w-0">
-                              <div className="text-white font-medium truncate">{p.firstName} {p.lastName}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 min-w-0">
-                          <div className="text-gray-300 truncate">{p.email}</div>
-                          <div className="text-gray-400 text-xs">{p.phone}</div>
-                        </td>
-                        <td className="px-6 py-4 text-gray-400 text-xs hidden md:table-cell">{fmt(p.birthDay)}</td>
-                        <td className="px-6 py-4 text-gray-400 text-xs font-mono hidden lg:table-cell">{formatSocialNumber(p.socialNumber) || "—"}</td>
-                        <td className="px-6 py-4">
-                          <div
-                            className="flex items-center justify-end gap-1"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                              <ActionBtn title="Voir les détails" variant="info" onClick={() => setDetailPatient(p)}>
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                              </ActionBtn>
-                              <ActionBtn title="Modifier" variant="default" onClick={() => setEditPatient(p)}>
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                              </ActionBtn>
-                              <ActionBtn title="Retirer de la liste" variant="danger" onClick={() => setDeletePatient(p)}>
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </ActionBtn>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              )}
-
-              {!isLoading && !search && (
-                <Pagination
-                  page={page}
-                  totalPages={meta.totalPages}
-                  total={meta.total}
-                  label="patient"
-                  onPage={(p) => setPage(p)}
-                />
-              )}
-            </div>
+            {/* Tableau TanStack */}
+            <TableDraw
+              data={patients}
+              columns={patientColumns}
+              actions={patientActions}
+              loading={isLoading}
+              pagination
+              sorting
+              filtering
+              pageSize={20}
+              emptyMessage="Aucun patient trouvé."
+              hover
+              striped
+              onRowClick={(p) => setDetailPatient(p)}
+            />
           </div>
         )}
 
-        {/* Modals Edit / Delete (restent en overlay) */}
+        {/* Modals Edit / Delete */}
         {editPatient && (
           <EditModal
             patient={editPatient}
@@ -922,25 +786,5 @@ export default function ListePatients() {
         )}
       </CabinetLayout>
     </Layout>
-  );
-}
-
-function ActionBtn({ title, onClick, variant = "default", children }) {
-  const variants = {
-    default: "text-gray-400 hover:text-white hover:bg-gray-600",
-    danger:  "text-red-400 hover:text-white hover:bg-red-600",
-    info:    "text-blue-400 hover:text-white hover:bg-blue-600",
-  };
-  return (
-    <button
-      title={title}
-      onClick={onClick}
-      className={`relative group p-2 rounded-lg transition-all duration-200 cursor-pointer ${variants[variant]}`}
-    >
-      {children}
-      <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity border border-gray-700 z-10">
-        {title}
-      </span>
-    </button>
   );
 }

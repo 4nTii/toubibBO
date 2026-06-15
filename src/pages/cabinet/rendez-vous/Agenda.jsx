@@ -100,9 +100,9 @@ function readCalendarState() {
   }
 }
 
-function saveCalendarState(view, date) {
+function saveCalendarState(view, date, siteId) {
   try {
-    localStorage.setItem(CALENDAR_STATE_KEY, JSON.stringify({ view, date }));
+    localStorage.setItem(CALENDAR_STATE_KEY, JSON.stringify({ view, date, siteId }));
   } catch {}
 }
 
@@ -113,7 +113,7 @@ function Agenda() {
   const savedState = readCalendarState();
 
   const [businessSites, setBusinessSites]       = useState([]);
-  const [selectedSiteId, setSelectedSiteId]     = useState(null);
+  const [selectedSiteId, setSelectedSiteId]     = useState(savedState.siteId ?? null);
   const [appointments, setAppointments]          = useState([]);
   const [sharedDoctors, setSharedDoctors]        = useState([]);
   const [loading, setLoading]                    = useState(true);
@@ -151,7 +151,7 @@ function Agenda() {
   }, [showFeedback]);
 
   useEffect(() => {
-    loadCalendar(null);
+    loadCalendar(savedState.siteId ?? null);
   }, [loadCalendar]);
 
   // Recharger quand un RDV est modifié ailleurs (badge, En attente, etc.)
@@ -165,7 +165,8 @@ function Agenda() {
   const handleSiteChange = useCallback((id) => {
     setSelectedSiteId(id);
     loadCalendar(id);
-  }, [loadCalendar]);
+    saveCalendarState(calendarView, calendarDate, id);
+  }, [loadCalendar, calendarView, calendarDate]);
 
   // ── Annulation depuis le popover ──────────────────────────────────────────
   const handleEventCancel = useCallback(async (fcEvent) => {
@@ -212,8 +213,8 @@ function Agenda() {
 
   // ── Persistance de la vue ─────────────────────────────────────────────────
   const handleViewChange = useCallback((view, date) => {
-    saveCalendarState(view, date);
-  }, []);
+    saveCalendarState(view, date, selectedSiteId);
+  }, [selectedSiteId]);
 
   // ── Drag & drop / resize → mise en attente ───────────────────────────────
   const handleEventDrop = useCallback((info) => {
@@ -304,7 +305,7 @@ function Agenda() {
               sharedDoctors={sharedDoctors}
               connectedDoctorName={connectedDoctorName}
             />
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3 ml-auto">
               {pendingChanges.length > 0 && (
                 <PendingChangesBar
                   changes={pendingChanges}

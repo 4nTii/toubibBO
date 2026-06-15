@@ -7,6 +7,7 @@ import AppointmentDrawer from "../../../components/AppointmentDrawer";
 import {
   getCalendarData,
   updateAppointmentStatus,
+  updateAppointmentFull,
 } from "../../../services/appointmentService";
 
 // ── Sélecteur de cabinet ──────────────────────────────────────────────────────
@@ -53,6 +54,39 @@ function ColorLegend({ sharedDoctors, connectedDoctorName }) {
   );
 }
 
+// ── Barre de modifications en attente (drag & drop) ──────────────────────────
+function PendingChangesBar({ changes, onSave, onDiscard, saving }) {
+  const uniqueCount = new Set(changes.map((c) => c.id)).size;
+  return (
+    <div className="flex items-center justify-between gap-4 px-4 py-3 bg-amber-900/40 border border-amber-600/50 rounded-lg">
+      <div className="flex items-center gap-2 text-amber-300 text-sm font-medium">
+        <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>
+          {uniqueCount} rendez-vous modifié{uniqueCount > 1 ? "s" : ""} — non enregistré{uniqueCount > 1 ? "s" : ""}
+        </span>
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={onDiscard}
+          disabled={saving}
+          className="px-3 py-1.5 text-sm font-medium rounded-md bg-gray-700 hover:bg-gray-600 text-gray-200 disabled:opacity-50 transition-colors"
+        >
+          Annuler
+        </button>
+        <button
+          onClick={onSave}
+          disabled={saving}
+          className="px-3 py-1.5 text-sm font-medium rounded-md bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors"
+        >
+          {saving ? "Enregistrement…" : "Enregistrer"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Persistance de la vue calendrier ─────────────────────────────────────────
 const CALENDAR_STATE_KEY = "toubib_agenda_state";
 
@@ -87,6 +121,8 @@ function Agenda() {
   const [editingAppointment, setEditingAppointment] = useState(null);
   const [calendarView] = useState(savedState.view ?? "timeGridWeek");
   const [calendarDate] = useState(savedState.date ?? undefined);
+  const [pendingChanges, setPendingChanges] = useState([]);
+  const [savingChanges, setSavingChanges]   = useState(false);
 
   const showFeedback = useCallback((message, type = "success") => {
     setFeedback({ message, type });
@@ -179,18 +215,78 @@ function Agenda() {
     saveCalendarState(view, date);
   }, []);
 
-  // ── Drag & drop ───────────────────────────────────────────────────────────
+  // ── Drag & drop / resize → mise en attente ───────────────────────────────
   const handleEventDrop = useCallback((info) => {
-    showFeedback(`Déplacé vers ${info.event.start.toLocaleString("fr-FR")}`, "success");
-    // TODO: updateAppointmentFull(info.event.id, { startDate, endDate })
-    // En cas d'erreur : info.revert()
+    if (String(info.event.id).startsWith("shared-")) {
+      info.revert();
+      showFeedback("Vous ne pouvez pas déplacer les rendez-vous d'un autre médecin.", "error");
+      return;
+    }
+    const id        = Number(info.event.id);
+    const startDate = info.event.startStr.slice(0, 19);
+    const endDate   = (info.event.endStr ?? "").slice(0, 19);
+    setPendingChanges((prev) => [...prev, { id, startDate, endDate, revert: info.revert }]);
   }, [showFeedback]);
 
   const handleEventResize = useCallback((info) => {
-    showFeedback("Durée modifiée.", "success");
-    // TODO: updateAppointmentFull(info.event.id, { startDate, endDate })
-    // En cas d'erreur : info.revert()
-  }, [showFeedback]);
+    const id        = Number(info.event.id);
+    const startDate = info.event.startStr.slice(0, 19);
+    const endDate   = (info.event.endStr ?? "").slice(0, 19);
+    setPendingChanges((prev) => [...prev, { id, startDate, endDate, revert: info.revert }]);
+  }, []);
+
+  // Annuler : appelle le premier revert de chaque event (position d'origine)
+  const handleDiscardChanges = useCallback(() => {
+    const seen = new Set();
+    for (const c of pendingChanges) {
+      if (!seen.has(c.id)) {
+        seen.add(c.id);
+        c.revert();
+      }
+    }
+    setPendingChanges([]);
+  }, [pendingChanges]);
+
+  // Enregistrer : persiste la dernière position de chaque event
+  const handleSaveChanges = useCallback(async () => {
+    setSavingChanges(true);
+    const latestById = {};
+    for (const c of pendingChanges) { latestById[c.id] = c; }
+    const entries = Object.values(latestById);
+
+    const doDiscard = () => {
+      const seen = new Set();
+      for (const c of pendingChanges) {
+        if (!seen.has(c.id)) { seen.add(c.id); c.revert(); }
+      }
+      setPendingChanges([]);
+    };
+
+    try {
+      const results = await Promise.all(
+        entries.map((c) => updateAppointmentFull(c.id, { startDate: c.startDate, endDate: c.endDate }))
+      );
+      if (results.every((r) => r?.status)) {
+        setAppointments((prev) =>
+          prev.map((a) => {
+            const match = latestById[a.id];
+            return match ? { ...a, start: match.startDate, end: match.endDate } : a;
+          })
+        );
+        window.dispatchEvent(new Event("scheduled-appointments-updated"));
+        showFeedback("Modifications enregistrées.");
+        setPendingChanges([]);
+      } else {
+        doDiscard();
+        showFeedback("Erreur lors de l'enregistrement.", "error");
+      }
+    } catch {
+      doDiscard();
+      showFeedback("Erreur réseau.", "error");
+    } finally {
+      setSavingChanges(false);
+    }
+  }, [pendingChanges, showFeedback]);
 
   const connectedDoctorName = user
     ? `Dr ${user.lastName ?? ""}`.trim()
@@ -203,7 +299,7 @@ function Agenda() {
       <CabinetLayout>
         <div className="space-y-4">
           {/* En-tête */}
-          <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-2xl font-bold text-white">Mon Agenda</h2>
               {currentSite && (
@@ -212,6 +308,14 @@ function Agenda() {
                 </p>
               )}
             </div>
+            {pendingChanges.length > 0 && (
+              <PendingChangesBar
+                changes={pendingChanges}
+                onSave={handleSaveChanges}
+                onDiscard={handleDiscardChanges}
+                saving={savingChanges}
+              />
+            )}
             <BusinessSiteSelector
               sites={businessSites}
               selectedId={selectedSiteId}

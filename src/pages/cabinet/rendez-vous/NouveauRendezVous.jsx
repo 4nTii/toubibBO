@@ -12,9 +12,7 @@ import AppointmentDrawer from "../../../components/AppointmentDrawer";
 /* ── Appointment card ─────────────────────────────────────────── */
 function PatientAvatar({ gender, firstName }) {
   return (
-    <div className={`avatar-user-${gender || "male"} w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}>
-      {firstName?.charAt(0).toUpperCase()}
-    </div>
+    <div className={`avatar-user-${gender || "male"} w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`} />
   );
 }
 

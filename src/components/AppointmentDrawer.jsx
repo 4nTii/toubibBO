@@ -160,9 +160,7 @@ function AppointmentDrawer({ doctorId, initialAppointment, onClose, onSuccess })
             <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3">1. Patient</h3>
             {selectedPatient ? (
               <div className="flex items-center gap-3 bg-blue-900/30 border border-blue-700 rounded-lg p-3">
-                <div className={`avatar-user-${selectedPatient.gender || "male"} w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}>
-                  {selectedPatient.firstName.charAt(0).toUpperCase()}
-                </div>
+                <div className={`avatar-user-${selectedPatient.gender || "male"} w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`} />
                 <div className="min-w-0 flex-1">
                   <div className="text-white font-medium text-sm">{selectedPatient.firstName} {selectedPatient.lastName}</div>
                   <div className="text-blue-300 text-xs truncate">{selectedPatient.email}</div>
@@ -202,9 +200,7 @@ function AppointmentDrawer({ doctorId, initialAppointment, onClose, onSuccess })
                           onClick={() => { setSelectedPatient(p); setPatientQuery(""); setPatientResults([]); }}
                           className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-700 transition text-left cursor-pointer"
                         >
-                          <div className={`avatar-user-${p.gender || "male"} w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-xs flex-shrink-0`}>
-                            {p.firstName.charAt(0).toUpperCase()}
-                          </div>
+                          <div className={`avatar-user-${p.gender || "male"} w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-xs flex-shrink-0`} />
                           <div className="min-w-0">
                             <div className="text-white text-sm font-medium">{p.firstName} {p.lastName}</div>
                             <div className="text-gray-400 text-xs truncate">{p.email} · {p.phone}</div>

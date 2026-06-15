@@ -312,7 +312,9 @@ export default function Calendar({
 
   // Notifie le parent quand la vue ou la date change (persistance localStorage)
   const handleDatesSet = useCallback((info) => {
-    onViewChange?.(info.view.type, info.view.currentStart.toISOString().slice(0, 10));
+    const d = info.view.currentStart;
+    const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    onViewChange?.(info.view.type, date);
   }, [onViewChange]);
 
   return (

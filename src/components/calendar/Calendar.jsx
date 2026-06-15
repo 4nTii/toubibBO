@@ -260,6 +260,7 @@ export default function Calendar({
   onEventDrop,
   onEventResize,
   onViewChange,
+  height = "auto",
 }) {
   const calendarRef = useRef(null);
   const [popover, setPopover] = useState(null); // { event, position: {x,y} }
@@ -318,7 +319,7 @@ export default function Calendar({
   }, [onViewChange]);
 
   return (
-    <div className="fc-wrapper">
+    <div className="fc-wrapper" style={height === "100%" ? { height: "100%" } : undefined}>
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
@@ -349,8 +350,9 @@ export default function Calendar({
         weekNumberFormat={{ week: "numeric" }}
         dayMaxEvents={4}
         moreLinkText={(n) => `+${n} autres`}
-        height="auto"
+        height={height}
         expandRows
+        stickyHeaderDates
         events={events}
         eventContent={renderEventContent}
         eventDidMount={handleEventDidMount}

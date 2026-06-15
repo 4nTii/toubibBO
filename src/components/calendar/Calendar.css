@@ -11,6 +11,16 @@
   position: relative;
 }
 
+/* Mode hauteur fixe (height="100%") : fc-wrapper et .fc remplissent leur parent */
+.fc-wrapper[style*="height"] {
+  display: flex;
+  flex-direction: column;
+}
+.fc-wrapper[style*="height"] > .fc {
+  flex: 1;
+  min-height: 0;
+}
+
 /* ── Variables CSS FullCalendar (surcharge du thème) ──────── */
 .fc-wrapper .fc {
   --fc-border-color: #374151;

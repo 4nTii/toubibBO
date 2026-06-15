@@ -1,13 +1,11 @@
 import Header from "../Header";
-import Footer from "../Footer";
 import CGUBanner from "../CGUBanner";
 
 function Layout({ children }) {
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col">
+    <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
       <Header />
-      <main className="flex-1 w-full mx-auto">{children}</main>
-      <Footer />
+      <main className="flex-1 overflow-hidden min-h-0">{children}</main>
       <CGUBanner />
     </div>
   );

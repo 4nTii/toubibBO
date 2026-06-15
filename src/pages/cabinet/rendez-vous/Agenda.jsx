@@ -297,35 +297,33 @@ function Agenda() {
   return (
     <Layout>
       <CabinetLayout>
-        <div className="space-y-4">
-          {/* En-tête */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-2xl font-bold text-white">Mon Agenda</h2>
-              {currentSite && (
-                <p className="text-gray-400 text-sm mt-0.5">
-                  {currentSite.name} — {currentSite.address}, {currentSite.ville}
-                </p>
-              )}
-            </div>
-            {pendingChanges.length > 0 && (
-              <PendingChangesBar
-                changes={pendingChanges}
-                onSave={handleSaveChanges}
-                onDiscard={handleDiscardChanges}
-                saving={savingChanges}
-              />
-            )}
-            <BusinessSiteSelector
-              sites={businessSites}
-              selectedId={selectedSiteId}
-              onChange={handleSiteChange}
+        <div className="h-full flex flex-col gap-3">
+          {/* Barre supérieure : légende (gauche) + modifications en attente + sélecteur cabinet (droite) */}
+          <div className="flex-shrink-0 flex flex-wrap items-center justify-between gap-3">
+            <ColorLegend
+              sharedDoctors={sharedDoctors}
+              connectedDoctorName={connectedDoctorName}
             />
+            <div className="flex flex-wrap items-center gap-3">
+              {pendingChanges.length > 0 && (
+                <PendingChangesBar
+                  changes={pendingChanges}
+                  onSave={handleSaveChanges}
+                  onDiscard={handleDiscardChanges}
+                  saving={savingChanges}
+                />
+              )}
+              <BusinessSiteSelector
+                sites={businessSites}
+                selectedId={selectedSiteId}
+                onChange={handleSiteChange}
+              />
+            </div>
           </div>
 
           {/* Feedback */}
           {feedback && (
-            <div className={`px-4 py-2.5 rounded-lg text-sm font-medium ${
+            <div className={`flex-shrink-0 px-4 py-2.5 rounded-lg text-sm font-medium ${
               feedback.type === "error"   ? "bg-red-900/50   border border-red-700   text-red-300"   :
               feedback.type === "success" ? "bg-green-900/50 border border-green-700 text-green-300" :
                                             "bg-blue-900/50  border border-blue-700  text-blue-300"
@@ -334,15 +332,9 @@ function Agenda() {
             </div>
           )}
 
-          {/* Légende des couleurs */}
-          <ColorLegend
-            sharedDoctors={sharedDoctors}
-            connectedDoctorName={connectedDoctorName}
-          />
-
-          {/* Calendrier */}
+          {/* Calendrier — zone scrollable interne */}
           {loading ? (
-            <div className="flex items-center justify-center h-64 bg-gray-800 rounded-xl">
+            <div className="flex-1 flex items-center justify-center bg-gray-800 rounded-xl">
               <div className="flex flex-col items-center gap-3 text-gray-400">
                 <svg className="w-8 h-8 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -352,19 +344,22 @@ function Agenda() {
               </div>
             </div>
           ) : (
-            <Calendar
-              appointments={appointments}
-              sharedDoctors={sharedDoctors}
-              connectedDoctorId={doctor?.id}
-              connectedDoctorName={connectedDoctorName}
-              initialView={calendarView}
-              initialDate={calendarDate}
-              onViewChange={handleViewChange}
-              onEventEdit={handleEventEdit}
-              onEventCancel={handleEventCancel}
-              onEventDrop={handleEventDrop}
-              onEventResize={handleEventResize}
-            />
+            <div className="flex-1 min-h-0">
+              <Calendar
+                appointments={appointments}
+                sharedDoctors={sharedDoctors}
+                connectedDoctorId={doctor?.id}
+                connectedDoctorName={connectedDoctorName}
+                initialView={calendarView}
+                initialDate={calendarDate}
+                onViewChange={handleViewChange}
+                onEventEdit={handleEventEdit}
+                onEventCancel={handleEventCancel}
+                onEventDrop={handleEventDrop}
+                onEventResize={handleEventResize}
+                height="100%"
+              />
+            </div>
           )}
         </div>
       </CabinetLayout>

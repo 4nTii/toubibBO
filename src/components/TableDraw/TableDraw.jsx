@@ -86,6 +86,7 @@ export default function TableDraw({
   actions       = [],
   onRowClick,
   toolbarExtra,
+  scrollX       = true,
   className     = "bg-gray-800 rounded-xl border border-gray-700 overflow-hidden flex flex-col",
 }) {
   /* ── State TanStack ── */
@@ -236,8 +237,8 @@ export default function TableDraw({
       )}
 
       {/* ── Table ── */}
-      <div className="overflow-x-auto flex-1">
-        <table className="w-full text-sm">
+      <div className={`${scrollX ? "overflow-x-auto" : "overflow-x-hidden"} flex-1`}>
+        <table className={`w-full text-sm${scrollX ? "" : " table-fixed"}`}>
 
           {/* En-têtes */}
           <thead>
@@ -246,7 +247,7 @@ export default function TableDraw({
                 {hg.headers.map((header) => (
                   <th
                     key={header.id}
-                    className={`text-left ${cellPad} whitespace-nowrap select-none ${
+                    className={`text-left ${cellPad} select-none ${
                       header.column.getCanSort()
                         ? "cursor-pointer hover:text-gray-200 transition-colors"
                         : ""

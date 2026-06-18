@@ -1,5 +1,6 @@
 import { API_URL } from "../config/config";
 import DateUtils from "./dateService";
+import { fetchWithTokenRefresh } from "./tokenService";
 
 /**
  * Get user info by fetching from API (uses HttpOnly cookie for auth)
@@ -7,9 +8,8 @@ import DateUtils from "./dateService";
  */
 export async function getUserInfo() {
   try {
-    const response = await fetch(`${API_URL}/users/me`, {
+    const response = await fetchWithTokenRefresh(`${API_URL}/users/me`, {
       method: "GET",
-      credentials: "include",
       headers: {
         Accept: "application/json",
       },

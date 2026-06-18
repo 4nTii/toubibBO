@@ -1,4 +1,5 @@
 import { API_URL } from "../config/config";
+import { fetchWithTokenRefresh } from "./tokenService";
 
 /**
  * Consultation duration options
@@ -16,9 +17,8 @@ export const DURATION_OPTIONS = [
  */
 export async function getDoctorInfo() {
   try {
-    const response = await fetch(`${API_URL}/doctor/me`, {
+    const response = await fetchWithTokenRefresh(`${API_URL}/doctor/me`, {
       method: "GET",
-      credentials: "include",
       headers: {
         Accept: "application/json",
       },
@@ -69,9 +69,8 @@ export async function updateDoctorProfile(fields, photoFile = null) {
       body = JSON.stringify(fields || {});
     }
 
-    const response = await fetch(`${API_URL}/doctor/me`, {
+    const response = await fetchWithTokenRefresh(`${API_URL}/doctor/me`, {
       method: "PATCH",
-      credentials: "include",
       headers,
       body,
     });

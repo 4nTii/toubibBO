@@ -79,7 +79,7 @@ const cabinetMenu = [
   {
     label: "Messagerie",
     path: "/cabinet/messagerie",
-    badge: 3, // TODO: Récupérer le nombre de messages non lus depuis l'API
+    badge: 0, // TODO: Récupérer le nombre de messages non lus depuis l'API
     children: [
       { label: "Boîte de réception", path: "/cabinet/messagerie" },
       { label: "Notifications", path: "/cabinet/messagerie/notifications" },
@@ -116,8 +116,15 @@ function CabinetLayout({ children }) {
 
   useEffect(() => {
     fetchScheduledCount();
-    window.addEventListener("scheduled-appointments-updated", fetchScheduledCount);
-    return () => window.removeEventListener("scheduled-appointments-updated", fetchScheduledCount);
+    window.addEventListener(
+      "scheduled-appointments-updated",
+      fetchScheduledCount,
+    );
+    return () =>
+      window.removeEventListener(
+        "scheduled-appointments-updated",
+        fetchScheduledCount,
+      );
   }, []);
 
   // Find active parent based on current path
@@ -144,7 +151,6 @@ function CabinetLayout({ children }) {
     }
   };
 
-
   const isActiveChild = (path) => location.pathname === path;
 
   const currentYear = new Date().getFullYear();
@@ -160,7 +166,7 @@ function CabinetLayout({ children }) {
                 const badge =
                   item.label === "Rendez-vous"
                     ? scheduledCount
-                    : item.badge ?? 0;
+                    : (item.badge ?? 0);
                 return (
                   <button
                     key={item.label}

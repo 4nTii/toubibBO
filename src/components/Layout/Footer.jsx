@@ -4,12 +4,40 @@ import { APP_NAME } from "../../config/config";
 function Footer() {
   const currentYear = new Date().getFullYear();
 
+  const handleSubscribe = (e) => {
+    e.preventDefault();
+    alert("Fonctionnalité à venir");
+  };
+
   return (
     <footer className="bg-gray-800 border-t border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Cards Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {/* Card 1: Legal Links */}
+          {/* Card 1: Newsletter */}
+          <div className="bg-gray-700 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">
+              Newsletter
+            </h3>
+            <p className="text-gray-300 text-sm mb-4">
+              Recevoir les nouvelles informations concernant les services de {APP_NAME} et les mises à jour médicales.
+            </p>
+            <form onSubmit={handleSubscribe} className="space-y-3">
+              <input
+                type="email"
+                placeholder="Votre adresse email"
+                className="w-full bg-gray-600 text-white rounded px-3 py-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              />
+              <button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded transition duration-200"
+              >
+                S'inscrire
+              </button>
+            </form>
+          </div>
+
+          {/* Card 2: Legal Links */}
           <div className="bg-gray-700 rounded-lg p-6">
             <h3 className="text-lg font-semibold text-white mb-4">
               Informations légales
@@ -58,7 +86,7 @@ function Footer() {
             </ul>
           </div>
 
-          {/* Card 2: Site Map */}
+          {/* Card 3: Site Map */}
           <div className="bg-gray-700 rounded-lg p-6">
             <h3 className="text-lg font-semibold text-white mb-4">
               Plan du site
@@ -105,14 +133,6 @@ function Footer() {
                 </Link>
               </li>
             </ul>
-          </div>
-
-          {/* Card 3: Empty for now */}
-          <div className="bg-gray-700 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">
-              &nbsp;
-            </h3>
-            {/* Empty card - content to be added later */}
           </div>
         </div>
 

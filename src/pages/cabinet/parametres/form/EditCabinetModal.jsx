@@ -148,7 +148,7 @@ function EditCabinetModal({
     return { businessSiteChanges, doctorBusinessSiteChanges };
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const { businessSiteChanges, doctorBusinessSiteChanges } =
       getChangedFields();
 
@@ -164,7 +164,8 @@ function EditCabinetModal({
       return;
     }
 
-    onSave(payload, site.businessSite.id);
+    const success = await onSave(payload, site.businessSite.id);
+    if (success) onClose();
   };
 
   return (

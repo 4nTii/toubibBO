@@ -149,13 +149,13 @@ function Preferences() {
 
     if (result.success) {
       showMessage("success", result.message);
-      setEditingSite(null);
       await fetchDoctorInfo();
     } else {
       showMessage("error", result.error);
     }
 
     setIsSaving(false);
+    return result.success;
   };
 
   const handleCreate = async (payload) => {

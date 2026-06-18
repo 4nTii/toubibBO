@@ -158,7 +158,7 @@ function CabinetLayout({ children }) {
   return (
     <div className="h-full flex flex-col bg-gray-900">
       {/* Menu horizontal — fixe dans le flux flex */}
-      <nav className="bg-gray-800 border-b border-gray-700 flex-shrink-0">
+      <nav className="bg-gray-800 border-b border-gray-700 shrink-0">
         <div className="max-w-full mx-auto px-4">
           <div className="flex items-center justify-between pt-2">
             <div className="flex items-center justify-center space-x-2 w-full">
@@ -194,7 +194,7 @@ function CabinetLayout({ children }) {
 
       <div className="flex flex-1 min-h-0">
         {/* Sidebar — fixe, ne scroll pas avec le contenu */}
-        <aside className="w-64 bg-gray-800 border-r border-gray-700 flex-shrink-0 flex flex-col overflow-y-auto">
+        <aside className="w-64 bg-gray-800 border-r border-gray-700 shrink-0 flex flex-col overflow-y-auto">
           <div className="p-4 flex-1">
             <h3 className="text-lg font-semibold text-white mb-4">
               {activeParent.label}
@@ -217,7 +217,7 @@ function CabinetLayout({ children }) {
                   >
                     <span>{child.label}</span>
                     {childBadge > 0 && (
-                      <span className="bg-red-500 text-white text-xs font-bold rounded-full min-w-[1.25rem] h-5 flex items-center justify-center px-1">
+                      <span className="bg-red-500 text-white text-xs font-bold rounded-full min-w-5 h-5 flex items-center justify-center px-1">
                         {childBadge > 9 ? "9+" : childBadge}
                       </span>
                     )}
@@ -226,7 +226,7 @@ function CabinetLayout({ children }) {
               })}
             </nav>
           </div>
-          <div className="p-4 border-t border-gray-700 flex-shrink-0">
+          <div className="p-4 border-t border-gray-700 shrink-0">
             <p className="text-center text-gray-500 text-xs">
               {APP_NAME} &copy; {currentYear}
             </p>

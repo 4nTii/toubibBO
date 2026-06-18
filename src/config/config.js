@@ -7,6 +7,3 @@ export const APP_NAME = import.meta.env.VITE_APP_NAME || "Toubib";
 // UI Configuration
 export const MESSAGE_TIMEOUT = parseInt(import.meta.env.VITE_MESSAGE_TIMEOUT) || 3000;
 export const CURRENCY_SYMBOL = import.meta.env.VITE_CURRENCY_SYMBOL || "€";
-
-// FTP/Files URL
-export const FTP_TARGET = import.meta.env.VITE_FTP_TARGET || "";

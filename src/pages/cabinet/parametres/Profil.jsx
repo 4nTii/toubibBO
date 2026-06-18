@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Layout from "../../../components/Layout/Layout";
 import CabinetLayout from "../../../components/Layout/CabinetLayout";
 import { useDoctor } from "../../../context/DoctorContext";
-import { MESSAGE_TIMEOUT, FTP_TARGET } from "../../../config/config";
+import { MESSAGE_TIMEOUT } from "../../../config/config";
 
 function ProfilCabinet() {
   const { doctor, isLoading, updateDoctor } = useDoctor();
@@ -208,7 +208,7 @@ function ProfilCabinet() {
                     src={
                       formData.profilePicturePreview ||
                       (doctor.profilePicture
-                        ? `${FTP_TARGET}${doctor.profilePicture}`
+                        ? doctor.profilePicture
                         : doctor.user?.gender === "female"
                           ? "/images/user/avatar-doctor-female.webp"
                           : "/images/user/avatar-doctor-male.webp")

@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth, useDoctor } from "../../context/DoctorContext";
 import { useNavigate, Link } from "react-router-dom";
 import { APP_NAME } from "../../config/config";
-import SearchBar from "../ui/SearchBar";
 
 import logo from "../../assets/images/app/toubib-logo-w500.webp";
 
@@ -53,14 +52,9 @@ function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
+          <Link to="/" className="flex items-center flex-1">
             <img src={logo} alt={APP_NAME} className="h-10 w-auto" />
           </Link>
-
-          {/* Search Bar */}
-          <div className="flex-1 max-w-2xl mx-8">
-            <SearchBar variant="header" />
-          </div>
 
           {/* Auth Section */}
           <div className="flex items-center">
